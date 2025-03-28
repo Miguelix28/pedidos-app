@@ -1,0 +1,29 @@
+{
+  "version": 2,
+  "builds": [{
+    "src": "dist/pedidos-app/**/*",
+    "use": "@vercel/static"
+  }],
+  "routes": [
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1"
+    },
+    {
+      "src": "/(.*\\.js|.*\\.css|.*\\.png|.*\\.ico|.*\\.svg)",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/manifest.webmanifest",
+      "headers": {
+        "Content-Type": "application/manifest+json"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}

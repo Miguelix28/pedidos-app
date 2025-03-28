@@ -1,0 +1,34 @@
+/* Estilo para el contenido del diálogo */
+.dialog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Espacio entre los campos */
+    padding: 16px 0;
+  }
+  
+  /* Estilo para los campos del formulario */
+  mat-form-field {
+    width: 100%; /* Ocupa todo el ancho disponible */
+  }
+  
+  /* Estilo para los mat-chip */
+  mat-chip {
+    margin: 2px;
+  }
+  
+  /* Estilo para los botones del diálogo */
+  mat-dialog-actions {
+    padding: 16px 0;
+    justify-content: flex-end; /* Alinea los botones a la derecha */
+  }
+  
+  /* Estilo para el botón de guardar */
+  button[color="primary"] {
+    background-color: #3f51b5; /* Color primario de Angular Material */
+    color: white;
+  }
+  
+  /* Estilo para el botón de cancelar */
+  button[mat-button] {
+    color: #3f51b5; /* Color primario de Angular Material */
+  }

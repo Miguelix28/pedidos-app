@@ -1,0 +1,52 @@
+<div class="menu-container">
+  <div class="header-menu" #headerMenu>
+    <!-- 🔹 Encabezado -->
+    <header class="menu-header">
+      <button class="menu-icon">
+        <mat-icon>menu</mat-icon>
+      </button>
+      <h1>Nuestro menú</h1>
+      <div class="carrito-container" (click)="irAlCarrito()">
+        <img src="assets/categories/carrito.png" alt="Carrito" class="carrito-icon">
+        <span *ngIf="cantidadCarrito > 0" class="notificacion">{{ cantidadCarrito }}</span>
+      </div>
+    </header>
+  
+    <!-- 🔹 Botones de En restaurante / Para llevar -->
+    <div class="selection-buttons">
+      <button [class.active]="selectedType === 'restaurant'" (click)="setOrderType('restaurant')">En restaurante</button>
+      <button [class.active]="selectedType === 'takeaway'" (click)="setOrderType('takeaway')">Para llevar</button>
+    </div>
+  
+    <!-- Categorías -->
+    <div class="categories-container">
+      <div 
+        *ngFor="let category of categories$ | async" 
+        class="category-item"
+        (click)="filterByCategory(category.name)">
+        <img [src]="category.icon" [alt]="category.name" [ngClass]="{ 'selected-image': selectedCategory === category.name }">
+        <span>{{ category.name }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔹 Productos -->
+  <div class="products-container" #productsContainer>
+    <div *ngFor="let product of products$ | async" class="product-card">
+      <img [src]="product.image" alt="{{ product.name }}">
+      <div class="details">
+        <h3>{{ product.name }}</h3>
+        <p>{{ product.description }}</p>
+        <span class="price">${{ product.price | number:'1.0-2' }}</span>
+      </div>
+      <button (click)="verDetalles(product)" class="add-to-cart"></button>
+    </div>
+  </div>
+
+  <!-- 🔹 Botón "Ver carrito" (Se muestra solo si hay productos en el carrito) -->
+  <button *ngIf="carrito.length > 0" class="boton-carrito" (click)="irAlCarrito()">
+    <span class="">Ver pedido</span>
+    <span class="">{{ total | currency:'COP':'$':'1.0-0' }}</span>
+    <!-- 🛒 Ver carrito - {{ total | currency }} -->
+  </button>
+</div>

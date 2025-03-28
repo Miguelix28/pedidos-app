@@ -1,0 +1,71 @@
+<div class="carrito-container">
+  <!-- Header with close button -->
+  <div class="carrito-header">
+    <h2>Resumen de tu pedido</h2>
+    <button class="cerrar-btn" (click)="volverAlMenu()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- 🔹 Botones de En restaurante / Para llevar -->
+  <div class="selection-buttons">
+    <button [class.active]="selectedType === 'restaurant'" (click)="setOrderType('restaurant')">En restaurante</button>
+    <button [class.active]="selectedType === 'takeaway'" (click)="setOrderType('takeaway')">Para llevar</button>
+  </div>
+
+  <h3>Resumen de tu pedido</h3>
+  
+  <ng-container *ngIf="carrito.length > 0; else carritoVacio">
+    <!-- Product items -->
+    <div *ngFor="let item of carrito; let i = index" class="producto-carrito">
+      <!-- Imagen del producto -->
+    <img *ngIf="item.image" class="producto-img" [src]="item.image" [alt]="item.name">
+      <div class="producto-info">
+        <div class="producto-detalle">
+          <h4>{{ item.name }}</h4>
+          <p class="precio">${{ item.price | number }}</p>
+        </div>
+        
+        <div class="cantidad-control">
+          <button class="control-btn" (click)="modificarCantidad(i, item.cantidad - 1)">−</button>
+          <span class="cantidad">{{ item.cantidad }}</span>
+          <button class="control-btn" (click)="modificarCantidad(i, item.cantidad + 1)">+</button>
+        </div>
+      </div>
+      
+      
+    </div>
+
+    <!-- Order summary -->
+    <div class="order-summary">
+      <div class="subtotal">
+        <p>Subtotal</p>
+        <p>${{ subtotal | number }}</p>
+      </div>
+      <div class="total">
+        <p><strong>Total tu pedido</strong></p>
+        <p><strong>${{ total | number }}</strong></p>
+      </div>
+      <div class="mensaje-importante">
+        <p><strong>Importante:</strong> Nuestros pedidos se realizan por medio de Whatsapp, al seleccionar "confirmar pedido" serás dirigido a la app.</p>
+      </div>
+      <button class="reiniciar-btn" (click)="vaciarCarrito()">
+        Reiniciar pedido
+      </button>
+    </div>
+  </ng-container>
+
+  <ng-template #carritoVacio>
+    <p class="carrito-vacio">Tu carrito está vacío.</p>
+    <div class="btn-carrito-vacio">
+      <button mat-raised-button color="accent"  (click)="volverAlMenu()">Volver al menú</button>
+    </div>
+  </ng-template>
+</div>
+
+<!-- Confirm order button - Fixed at bottom -->
+<div class="confirmar-pedido-container" *ngIf="mostrarConfirmarPedido">
+  <button class="confirmar-pedido" (click)="irAPagar()">
+    Confirmar pedido
+  </button>
+</div>

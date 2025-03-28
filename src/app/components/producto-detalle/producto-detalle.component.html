@@ -1,0 +1,73 @@
+<div class="producto-detalle-container">
+  <!-- Botón de regreso -->
+  <button mat-icon-button class="back-button" (click)="volverAlMenu()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+
+  <!-- Imagen del producto -->
+  <div class="producto-imagen">
+    <img [src]="producto?.image" [alt]="producto?.name">
+  </div>
+
+  <!-- Información del producto -->
+  <div class="producto-info">
+    <h2 class="titulo">{{ producto?.name }}</h2>
+    <p class="producto-descripcion">{{ producto?.description }}</p>
+    <strong class="producto-precio">${{ producto?.price | number }}</strong>
+
+    <!-- Acordeón de Personalización -->
+    <mat-accordion class="accordion-container">
+      <mat-expansion-panel>
+        <mat-expansion-panel-header class="expansion-header">
+          <mat-panel-title> Personaliza tu pedido </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div *ngFor="let exclusion of producto?.customization?.exclusions" class="checkbox-item">
+          <mat-checkbox [(ngModel)]="exclusionesSeleccionadas[exclusion]">
+            {{ exclusion }}
+          </mat-checkbox>
+        </div>
+      </mat-expansion-panel>
+
+      <!-- Acordeón de Adiciones -->
+      <mat-expansion-panel>
+        <mat-expansion-panel-header class="expansion-header">
+          <mat-panel-title> Adiciones </mat-panel-title>
+        </mat-expansion-panel-header>
+
+        <div *ngFor="let addition of producto?.customization?.additions" class="addition-item">
+          <span>Adición de {{ addition }}</span>
+
+          <div class="adicion-contador">
+            <button mat-icon-button color="warn" (click)="disminuirAdicion(addition)">
+              <mat-icon>remove</mat-icon>
+            </button>
+
+            <span>{{ adicionesSeleccionadas[addition] || 0 }}</span>
+
+            <button mat-icon-button color="primary" (click)="agregarAdicion(addition)">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>
+
+  </div> <!-- Cierre de producto-info -->
+  <!-- Contenedor de botones en la parte inferior -->
+  <div class="bottom-buttons">
+    <div class="cantidad-container">
+      <button mat-icon-button (click)="disminuirCantidad()">
+        <mat-icon>remove</mat-icon>
+      </button>
+      <span>{{ cantidad }}</span>
+      <button mat-icon-button (click)="aumentarCantidad()">
+        <mat-icon>add</mat-icon>
+      </button>
+    </div>
+
+    <button mat-flat-button  class="agregar-carrito" (click)="agregarAlCarrito()">
+      Agregar ${{ (producto?.price * cantidad) | number }}
+    </button>
+  </div>
+</div> <!-- Cierre de producto-detalle-container -->
