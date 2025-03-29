@@ -1,5 +1,15 @@
 {
     "rewrites": [
       { "source": "/(.*)", "destination": "/" }
+    ],
+    "routes": [
+      { "src": "/(.*)", "dest": "/" },
+      { "src": "/menu", "dest": "/"},
+      { "src": "/producto/:id", "dest": "/" },
+      { "src": "/carrito", "dest": "/" },
+      { "src": "/cart", "dest": "/" },
+      { "src": "/checkout", "dest": "/" },
+      { "src": "/admin", "dest": "/" },
+      { "src": "/**", "dest": "/" }
     ]
 }
