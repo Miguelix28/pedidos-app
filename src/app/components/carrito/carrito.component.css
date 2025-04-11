@@ -287,3 +287,17 @@ h3 {
     height: 98px;
   }
 }
+
+.adiciones,
+.exclusiones {
+  margin: 4px 0 2px;
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+ul {
+  padding-left: 1rem;
+  margin: 0;
+  font-size: 14px;
+}

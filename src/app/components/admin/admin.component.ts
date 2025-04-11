@@ -127,4 +127,10 @@ export class AdminComponent implements OnInit {
       console.error('Error al cerrar sesión con Google:', error);
     }
   }
+
+  formatAdditions(additions: any[]): string {
+    if (!additions || additions.length === 0) return 'N/A';
+  
+    return additions.map(a => `${a.name || a.nombre} (${a.price || a.precioUnitario || 0})`).join(', ');
+  }
 }

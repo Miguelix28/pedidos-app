@@ -39,16 +39,30 @@ export class CarritoComponent implements OnInit {
 
   // Método para calcular el subtotal y el total
   calcularTotales() {
-    this.subtotal = this.carrito.reduce((acc, item) => acc + (item.price * item.cantidad), 0);
-    this.total = this.subtotal; // Aquí puedes añadir impuestos o descuentos si es necesario
+    this.subtotal = this.carrito.reduce((acc, item) => acc + (item.precioTotal || 0), 0);
+    this.total = this.subtotal;
   }
 
   modificarCantidad(index: number, cantidad: number) {
     if (cantidad <= 0) {
       this.carrito.splice(index, 1);
     } else {
-      this.carrito[index].cantidad = cantidad;
+      const item = this.carrito[index];
+      item.cantidad = cantidad;
+  
+      // 🔁 Recalcular precio total con adiciones
+      const precioBase = item.price;
+      let totalAdiciones = 0;
+  
+      if (item.customization?.additions) {
+        for (const addition of item.customization.additions) {
+          totalAdiciones += (addition.precioUnitario || 0) * (addition.cantidad || 0);
+        }
+      }
+  
+      item.precioTotal = (precioBase + totalAdiciones) * cantidad;
     }
+  
     this.actualizarCarrito();
   }
 
@@ -82,9 +96,11 @@ export class CarritoComponent implements OnInit {
       mensaje += `*${item.cantidad}x ${item.name}* - $${(item.price * item.cantidad).toLocaleString()}\n`;
     
       // Manejar adiciones de manera más detallada
-      if (item.customization?.additions && Object.keys(item.customization.additions).length > 0) {
-        const adiciones = Object.keys(item.customization.additions);
-        mensaje += `  🟢 Adiciones: ${adiciones.join(', ')}\n`;
+      if (item.customization?.additions?.length > 0) {
+        const adicionesTexto = item.customization.additions.map((add: any) => {
+          return `${add.nombre} (x${add.cantidad})`;
+        }).join(', ');
+        mensaje += `  🟢 Adiciones: ${adicionesTexto}\n`;
       }
     
       // Manejar exclusiones de manera más detallada

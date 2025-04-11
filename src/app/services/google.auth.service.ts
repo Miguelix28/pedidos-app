@@ -1,5 +1,15 @@
 import { Injectable } from '@angular/core';
-import { Auth, getRedirectResult, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, user } from '@angular/fire/auth';
+import { 
+  Auth, 
+  getRedirectResult, 
+  GoogleAuthProvider, 
+  signInWithPopup, 
+  signInWithRedirect, 
+  signOut, 
+  user,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword
+} from '@angular/fire/auth';
 import { Firestore, doc, setDoc, docData, getDoc } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
@@ -27,6 +37,57 @@ export class GoogleAuthService {
 
   private get authUser$() {
     return user(this.auth);
+  }
+
+  // Nuevo método para autenticación con email/password
+  async emailPasswordSignIn(email: string, password: string) {
+    try {
+      console.log('Iniciando sesión con email/password...');
+      const userCredential = await signInWithEmailAndPassword(this.auth, email, password);
+      
+      if (userCredential.user) {
+        const user = userCredential.user;
+        // Guardar sesión
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('uid', user.uid);
+        sessionStorage.setItem('displayName', user.displayName || email.split('@')[0] || '');
+        await this.updateUserData(user);
+        return user;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error en inicio de sesión con email/password:", error);
+      throw error;
+    }
+  }
+
+  // Método opcional para crear nuevos usuarios con email/password
+  async registerWithEmailPassword(email: string, password: string, displayName: string = '') {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+      
+      if (userCredential.user) {
+        const user = userCredential.user;
+        // Guardar sesión
+        sessionStorage.setItem('loggedIn', 'true');
+        sessionStorage.setItem('uid', user.uid);
+        sessionStorage.setItem('displayName', displayName || email.split('@')[0] || '');
+        
+        // Actualizar datos del usuario incluyendo el displayName
+        await this.updateUserData({
+          ...user,
+          displayName: displayName || email.split('@')[0] || ''
+        });
+        
+        return user;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error("Error al registrar usuario:", error);
+      throw error;
+    }
   }
 
   async googleSignIn() {

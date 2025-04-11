@@ -20,7 +20,7 @@ interface Product {
   category: string;
   customization: {
     exclusions: string[];
-    additions: string[];
+    additions: { name: string; price: number }[];
   };
 }
 
@@ -99,42 +99,22 @@ export class EditProductDialog {
   }
 
   // Método para agregar una adición
-  addAddition(event: MatChipInputEvent): void {
-    const value = (event.value || '').trim();
-
-    // Agregar la adición
-    if (value) {
-      this.product.customization.additions.push(value);
-    }
-
-    // Limpiar el input
-    event.chipInput!.clear();
+  addAddition() {
+    this.product.customization.additions.push({ name: '', price: 0 });
   }
 
   // Método para eliminar una adición
-  removeAddition(addition: string): void {
-    const index = this.product.customization.additions.indexOf(addition);
-    if (index >= 0) {
-      this.product.customization.additions.splice(index, 1);
-      this.announcer.announce(`Adición eliminada: ${addition}`);
-    }
+  removeAddition(index: number) {
+    const removed = this.product.customization.additions.splice(index, 1)[0];
+    this.announcer.announce(`Adición eliminada: ${removed?.name}`);
   }
 
-  // Método para editar una adición
-  editAddition(addition: string, event: MatChipEditedEvent): void {
-    const value = event.value.trim();
-
-    // Eliminar la adición si no tiene nombre
-    if (!value) {
-      this.removeAddition(addition);
-      return;
-    }
-
-    // Editar la adición
-    const index = this.product.customization.additions.indexOf(addition);
-    if (index >= 0) {
-      this.product.customization.additions[index] = value;
-    }
+  updateAdditionName(index: number, newName: string) {
+    this.product.customization.additions[index].name = newName;
+  }
+  
+  updateAdditionPrice(index: number, newPrice: number) {
+    this.product.customization.additions[index].price = newPrice;
   }
 
   onCancel(): void {

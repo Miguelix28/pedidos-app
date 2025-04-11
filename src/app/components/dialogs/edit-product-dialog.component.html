@@ -56,28 +56,29 @@
     </mat-form-field>
 
     <!-- Adiciones -->
-    <mat-form-field appearance="outline">
-      <mat-label>Adiciones</mat-label>
-      <mat-chip-grid #adicionesGrid>
-        <mat-chip-row 
-          *ngFor="let addition of product.customization.additions" 
-          (removed)="removeAddition(addition)"
-          (edited)="editAddition(addition, $event)"
-        >
-          {{ addition }}
-          <button matChipRemove>
-            <mat-icon>cancel</mat-icon>
-          </button>
-        </mat-chip-row>
-        <input 
-          matInput 
-          placeholder="Agregar adición" 
-          [matChipInputFor]="adicionesGrid" 
-          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-          (matChipInputTokenEnd)="addAddition($event)" 
-        />
-      </mat-chip-grid>
-    </mat-form-field>
+    <div class="adiciones-container">
+      <h3>Adiciones</h3>
+
+      <!-- Lista de adiciones -->
+      <div *ngFor="let addition of product.customization.additions; let i = index" class="adicion-item">
+        <mat-form-field appearance="fill" class="adicion-nombre">
+          <mat-label>Nombre</mat-label>
+          <input matInput [(ngModel)]="addition.name" name="additionName{{i}}" required>
+        </mat-form-field>
+
+        <mat-form-field appearance="fill" class="adicion-precio">
+          <mat-label>Precio</mat-label>
+          <input matInput type="number" [(ngModel)]="addition.price" name="additionPrice{{i}}" required>
+        </mat-form-field>
+
+        <button mat-icon-button color="warn" (click)="removeAddition(i)">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+
+      <!-- Botón para añadir nueva adición -->
+      <button mat-button color="accent" (click)="addAddition()">➕ Añadir adición</button>
+    </div>
   </form>
 </mat-dialog-content>
 <mat-dialog-actions align="end">

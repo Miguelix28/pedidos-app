@@ -36,16 +36,16 @@
         </mat-expansion-panel-header>
 
         <div *ngFor="let addition of producto?.customization?.additions" class="addition-item">
-          <span>Adición de {{ addition }}</span>
-
+          <span>Adición de {{ addition.name }} (+${{ addition.price }})</span>
+        
           <div class="adicion-contador">
-            <button mat-icon-button color="warn" (click)="disminuirAdicion(addition)">
+            <button mat-icon-button color="warn" (click)="disminuirAdicion(addition.name)">
               <mat-icon>remove</mat-icon>
             </button>
-
-            <span>{{ adicionesSeleccionadas[addition] || 0 }}</span>
-
-            <button mat-icon-button color="primary" (click)="agregarAdicion(addition)">
+        
+            <span>{{ adicionesSeleccionadas[addition.name] || 0 }}</span>
+        
+            <button mat-icon-button color="primary" (click)="agregarAdicion(addition.name)">
               <mat-icon>add</mat-icon>
             </button>
           </div>
@@ -66,8 +66,8 @@
       </button>
     </div>
 
-    <button mat-flat-button  class="agregar-carrito" (click)="agregarAlCarrito()">
-      Agregar ${{ (producto?.price * cantidad) | number }}
+    <button mat-flat-button class="agregar-carrito" (click)="agregarAlCarrito()">
+      Agregar ${{ getPrecioTotal() | number }}
     </button>
   </div>
 </div> <!-- Cierre de producto-detalle-container -->

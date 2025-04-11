@@ -32,3 +32,19 @@
   button[mat-button] {
     color: #3f51b5; /* Color primario de Angular Material */
   }
+
+  .adiciones-container {
+    margin-top: 1rem;
+  }
+  
+  .adicion-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .adicion-nombre, .adicion-precio {
+    flex: 1;
+  }
+  

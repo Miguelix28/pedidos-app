@@ -23,7 +23,25 @@
       <div class="producto-info">
         <div class="producto-detalle">
           <h4>{{ item.name }}</h4>
-          <p class="precio">${{ item.price | number }}</p>
+          <p class="precio">${{ item.precioTotal | number }}</p>
+        
+          <ng-container *ngIf="item.customization?.additions?.length > 0">
+            <p class="adiciones">🟢 Adiciones:</p>
+            <ul>
+              <li *ngFor="let add of item.customization.additions">
+                {{ add.nombre }} (x{{ add.cantidad }}) - ${{ add.subtotal | number }}
+              </li>
+            </ul>
+          </ng-container>
+        
+          <ng-container *ngIf="item.customization?.exclusions?.length > 0">
+            <p class="exclusiones">🔴 Sin:</p>
+            <ul>
+              <li *ngFor="let exc of item.customization.exclusions">
+                {{ exc }}
+              </li>
+            </ul>
+          </ng-container>
         </div>
         
         <div class="cantidad-control">

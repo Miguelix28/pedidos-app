@@ -85,7 +85,17 @@ export class ProductoDetalleComponent {
   
     const adiciones = Object.entries(this.adicionesSeleccionadas)
       .filter(([_, cantidad]) => cantidad > 0)
-      .map(([nombre, cantidad]) => ({ nombre, cantidad }));
+      .map(([nombre, cantidad]) => {
+        const additionInfo = this.producto.customization.additions.find((a: any) => a.name === nombre);
+        return {
+          nombre,
+          cantidad,
+          precioUnitario: additionInfo?.price || 0,
+          subtotal: (additionInfo?.price || 0) * cantidad
+        };
+      });
+  
+    const precioTotal = this.getPrecioTotal(); // usamos tu método actual
   
     const productoParaAgregar = {
       ...this.producto,
@@ -93,24 +103,39 @@ export class ProductoDetalleComponent {
       customization: {
         exclusions: exclusiones,
         additions: adiciones
-      }
+      },
+      precioTotal: this.getPrecioTotal()// << guardamos el precio con adiciones incluidas
     };
   
-    const index = carrito.findIndex((p: any) => 
-      p.id === this.producto.id && 
+    const index = carrito.findIndex((p: any) =>
+      p.id === this.producto.id &&
       JSON.stringify(p.customization.exclusions) === JSON.stringify(exclusiones) &&
       JSON.stringify(p.customization.additions) === JSON.stringify(adiciones)
     );
   
     if (index !== -1) {
-      // Si el producto es exactamente igual (mismas exclusiones y adiciones), suma las cantidades
       carrito[index].cantidad += this.cantidad;
+      carrito[index].precioTotal += precioTotal;
     } else {
-      // Si es un producto nuevo o con personalizaciones diferentes, lo agrega
       carrito.push(productoParaAgregar);
     }
   
     sessionStorage.setItem('carrito', JSON.stringify(carrito));
     this.router.navigate(['/menu']);
+  }
+  
+
+  getPrecioTotal(): number {
+    let precioBase = this.producto?.price || 0;
+    let totalAdiciones = 0;
+  
+    if (this.producto?.customization?.additions) {
+      for (const addition of this.producto.customization.additions) {
+        const cantidad = this.adicionesSeleccionadas[addition.name] || 0;
+        totalAdiciones += addition.price * cantidad;
+      }
+    }
+  
+    return (precioBase + totalAdiciones) * this.cantidad; // 👈 Adiciones también se multiplican
   }
 }
