@@ -7,6 +7,8 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Observable } from 'rxjs';
 import { MatButtonModule } from '@angular/material/button';
 import { EditProductDialog } from '../dialogs/edit-product-dialog.component';
+import { Router } from '@angular/router';
+import { GoogleAuthService } from '../../services/google.auth.service';
 
 interface Product {
   id?: string;
@@ -51,7 +53,7 @@ export class AdminComponent implements OnInit {
   };
   editingProduct: Product | null = null;
 
-  constructor(private firestore: Firestore, public dialog: MatDialog) {
+  constructor(private firestore: Firestore, public dialog: MatDialog, private router: Router,private authService: GoogleAuthService,) {
     const productsRef = collection(this.firestore, 'products');
     this.products$ = collectionData(productsRef, { idField: 'id' }) as Observable<Product[]>;
   }
@@ -110,5 +112,19 @@ export class AdminComponent implements OnInit {
         }
       }
     });
+  }
+  async logout() {
+    this.authService.signOut().then(() => {
+      sessionStorage.clear();
+      this.router.navigate(['/login']);
+    });
+    try {
+      await this.authService.signOut().then(() => {
+        sessionStorage.clear();
+        this.router.navigate(['/login']);
+      });
+    } catch (error) {
+      console.error('Error al cerrar sesión con Google:', error);
+    }
   }
 }

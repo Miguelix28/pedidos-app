@@ -43,4 +43,10 @@
   .mat-icon {
     font-size: 24px;
   }
+
+  .top-bar {
+    display: flex;
+    justify-content: flex-end;
+    padding: 1rem;
+  }
   

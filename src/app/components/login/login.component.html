@@ -1,0 +1,23 @@
+<div class="login-container" [ngClass]="{'loading': loading, 'logged-in': loggedIn}">
+  <div class="login-card" [ngClass]="{'loading': loading}">
+    <h2>¡Bienvenido!</h2>
+    <p>Inicia sesión para continuar</p>
+    
+    <button (click)="signInWithGoogle()" class="google-btn" [ngClass]="{'loading': loading}" [disabled]="loading">
+        <button (click)="$event.stopPropagation(); signInWithGoogle()" class="google-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 48 48">
+              <path fill="#fbc02d" d="M43.6 20.5h-1.9V20H24v8h11.3C33.5 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C33.7 6.4 29.1 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.3-.4-3.5z"/>
+              <path fill="#e53935" d="M6.3 14.7l6.6 4.8C14.3 16.2 18.8 14 24 14c3.1 0 5.9 1.2 8 3.1l5.7-5.7C33.7 6.4 29.1 4 24 4c-7.5 0-13.9 4.2-17.7 10.7z"/>
+              <path fill="#4caf50" d="M24 44c5 0 9.5-1.9 13-5l-6-5c-2.2 1.5-5 2.3-8 2.3-5.2 0-9.5-3.3-11.2-7.8l-6.6 5.1C10.1 39.6 16.6 44 24 44z"/>
+              <path fill="#1565c0" d="M43.6 20.5h-1.9V20H24v8h11.3c-1.2 3.3-4 5.9-7.5 6.7l6 5c-3.6 3.1-8.1 5-13 5-7.4 0-13.9-4.4-17.2-10.7l6.6-5.1C14.5 34.7 18.8 38 24 38c5 0 9.5-1.9 13-5 3.3-3.1 5.3-7.6 5.3-12.5 0-1.2-.1-2.3-.4-3.5z"/>
+            </svg>
+          </button>
+          
+      Iniciar sesión con Google
+    </button>
+    
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
+  </div>
+</div>

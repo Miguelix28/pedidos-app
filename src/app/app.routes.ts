@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { AdminGuard } from './guards/admin-guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/menu', pathMatch: 'full' },
@@ -24,7 +25,12 @@ export const routes: Routes = [
   },
   { 
     path: 'admin', 
-    loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent)
+    loadComponent: () => import('./components/admin/admin.component').then(m => m.AdminComponent),
+    canActivate: [AdminGuard]  // Aplica el guard aquí
+  },
+  { 
+    path: 'login', 
+    loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent),
   },
   {
     path: '**', 
