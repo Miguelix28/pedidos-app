@@ -1,20 +1,5 @@
 {
-    "version": 2,
-  "builds": [
-    {
-      "src": "angular.json",
-      "use": "@vercel/angular"
-    }
-  ],
-    "routes": [
-      { "src": "/(.*)", "dest": "/" },
-      { "src": "/login", "dest": "/"},
-      { "src": "/menu", "dest": "/"},
-      { "src": "/producto/:id", "dest": "/" },
-      { "src": "/carrito", "dest": "/" },
-      { "src": "/cart", "dest": "/" },
-      { "src": "/checkout", "dest": "/" },
-      { "src": "/admin", "dest": "/" },
-      { "src": "/**", "dest": "/" }
-    ]
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/" }
+  ]
 }
