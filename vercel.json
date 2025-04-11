@@ -1,7 +1,11 @@
 {
-    "rewrites": [
-      { "source": "/(.*)", "destination": "/" }
-    ],
+    "version": 2,
+  "builds": [
+    {
+      "src": "angular.json",
+      "use": "@vercel/angular"
+    }
+  ],
     "routes": [
       { "src": "/(.*)", "dest": "/" },
       { "src": "/login", "dest": "/"},
