@@ -8,5 +8,6 @@ export const environment = {
     messagingSenderId: "1085086037703",
     appId: "1:1085086037703:web:6806e18c715c43bbab30e2",
     measurementId: "G-HKJN5JFYGL"
-  }
+  },
+  redirectUrl: 'http://localhost:4200/login'
 };
