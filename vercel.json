@@ -4,6 +4,7 @@
     ],
     "routes": [
       { "src": "/(.*)", "dest": "/" },
+      { "src": "/login", "dest": "/"},
       { "src": "/menu", "dest": "/"},
       { "src": "/producto/:id", "dest": "/" },
       { "src": "/carrito", "dest": "/" },
