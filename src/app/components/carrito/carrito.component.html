@@ -7,10 +7,46 @@
     </button>
   </div>
 
-  <!-- 🔹 Botones de En restaurante / Para llevar -->
+  <!-- Tabs de selección de tipo de orden -->
   <div class="selection-buttons">
-    <button [class.active]="selectedType === 'restaurant'" (click)="setOrderType('restaurant')">En restaurante</button>
-    <button [class.active]="selectedType === 'takeaway'" (click)="setOrderType('takeaway')">Para llevar</button>
+    <button
+      [class.active]="selectedType === 'takeaway'"
+      (click)="setOrderType('takeaway')"
+    >
+      <span>Recoger</span>
+    </button>
+    
+    <button
+      [class.active]="selectedType === 'restaurant'"
+      (click)="setOrderType('restaurant')"
+    >
+      <span>Restaurante</span>
+    </button>
+    
+    <button
+      [class.active]="selectedType === 'delivery'"
+      (click)="setOrderType('delivery')"
+    >
+      <span>Domicilio</span>
+    </button>
+  </div>
+
+  <div *ngIf="showDireccion" class="direccion-input">
+    <h3><label for="direccion">Dirección de entrega</label></h3>
+    
+    <input
+      id="direccion"
+      type="text"
+      [(ngModel)]="direccion"
+      placeholder="Ej: Calle 80N # 99 - 30 B/La Paz"
+      [ngClass]="{'invalid-input': direccion === '' && formSubmitted}"
+      (blur)="validateDireccion()"
+      #direccionInput
+    />
+        
+    <div *ngIf="direccion === '' && formSubmitted" class="error-message">
+      Ingresa la dirección de entrega o selecciona
+    </div>
   </div>
 
   <h3>Resumen de tu pedido</h3>
@@ -87,3 +123,4 @@
     Confirmar pedido
   </button>
 </div>
+

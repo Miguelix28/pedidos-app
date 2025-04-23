@@ -7,11 +7,14 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatListModule } from '@angular/material/list';
 import { Router } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-carrito',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule, MatButtonToggleModule, MatListModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule, MatButtonToggleModule, MatListModule, CommonModule,
+    FormsModule,],
   templateUrl: './carrito.component.html',
   styleUrls: ['./carrito.component.css']
 })
@@ -22,9 +25,11 @@ export class CarritoComponent implements OnInit {
   selectedType: string = 'restaurant'; // Valor predeterminado
   mostrarConfirmarPedido: boolean = false;
   orderType: string | undefined;
+  showDireccion: boolean = false;
+  direccion: string = '';
+  formSubmitted: boolean = false;
   
   constructor(private router: Router, private carritoService: CarritoService) {
-    this.selectedType = this.carritoService.getOrderType();
   }
 
   ngOnInit() {
@@ -84,6 +89,10 @@ export class CarritoComponent implements OnInit {
   }
 
   irAPagar() {
+    if (!this.validateDireccion()) {
+      return; // Detiene la ejecución si la validación falla
+    }
+    
     // Use the order type from the CarritoService
     const orderType = this.carritoService.getOrderType();
   
@@ -116,19 +125,22 @@ export class CarritoComponent implements OnInit {
     mensaje += `💰 *Subtotal*: $${this.subtotal.toLocaleString()}\n`;
     mensaje += `🎉 *Total*: $${this.total.toLocaleString()}\n\n`;
     
-    // Tipo de pedido con más claridad
-    const orderTypeMessage = orderType === 'takeaway' 
-      ? '🛵 Entrega a Domicilio' 
-      : '🍽️ Para comer en el restaurante';
-    
-    mensaje += `📍 *Tipo de Pedido*: ${orderTypeMessage}\n`;
+    // Tipo de pedido con información de dirección si es delivery
+    if (orderType === 'delivery') {
+      mensaje += `🛵 *Tipo de Pedido*: Entrega a Domicilio\n`;
+      mensaje += `📍 *Dirección*: ${this.direccion}\n`;
+    } else if (orderType === 'takeaway') {
+      mensaje += `🥡 *Tipo de Pedido*: Para llevar\n`;
+    } else {
+      mensaje += `🍽️ *Tipo de Pedido*: Para comer en el restaurante\n`;
+    }
     
     // Mensaje final
-    mensaje += "¡Gracias por tu pedido! 🙌";
+    mensaje += "\n¡Gracias por tu pedido! 🙌";
     
     // Redirigir a WhatsApp con el mensaje
-  const numeroDestino = "573165345924"; // Número en formato internacional SIN "+", ejemplo: México (+52) → "521234567890"
-  const urlWhatsApp = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
+    const numeroDestino = "573165345924"; // Número en formato internacional SIN "+"
+    const urlWhatsApp = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
     window.location.href = urlWhatsApp;
   }
 
@@ -138,6 +150,67 @@ export class CarritoComponent implements OnInit {
 
   setOrderType(type: string) {
     this.selectedType = type;
+    if (type === 'delivery') {
+      this.showDireccion = true;
+      this.getUbicacion(); 
+    } else {
+      this.showDireccion = false;
+      this.direccion = '';
+    }
     this.carritoService.setOrderType(type);
+  }
+
+  getUbicacion() {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        position => {
+          const { latitude, longitude } = position.coords;
+          this.reverseGeocode(latitude, longitude); // Convertimos a dirección
+        },
+        error => {
+          console.error('Error obteniendo ubicación:', error);
+          // alert('No se pudo obtener tu ubicación');
+        }
+      );
+    } else {
+      // alert('Tu navegador no soporta geolocalización.');
+    }
+  }
+  
+  reverseGeocode(lat: number, lon: number) {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}`;
+  
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.address) {
+          // Extraemos solo calle, número y barrio
+          const numero = data.address.house_number || '';
+          const calle = data.address.road || data.address.street || '';
+          const barrio = data.address.suburb || data.address.neighbourhood || '';
+          
+          // Formateamos la dirección simplificada
+          this.direccion = `${calle} ${numero}, ${barrio}`.trim();
+          
+          // Si faltan datos, mostramos lo que tengamos
+          if (!this.direccion || this.direccion === ', ') {
+            this.direccion = `Lat: ${lat}, Lon: ${lon}`;
+          }
+        } else {
+          this.direccion = `Lat: ${lat}, Lon: ${lon}`;
+        }
+      })
+      .catch(error => {
+        console.error('Error en reverse geocoding:', error);
+        this.direccion = `Lat: ${lat}, Lon: ${lon}`;
+      });
+  }
+
+  validateDireccion(): boolean {
+    if (this.selectedType === 'delivery' && !this.direccion.trim()) {
+      this.formSubmitted = true;
+      return false;
+    }
+    return true;
   }
 }

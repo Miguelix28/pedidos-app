@@ -2,17 +2,20 @@ import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, inject } from 
 import { CommonModule } from '@angular/common';
 import { Category, FirebaseService, Product } from '../../services/firebase.service';
 import { ProductoService } from '../../services/producto.service';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, startWith, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Router } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, FormsModule],
   providers: [FirebaseService], 
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css']
@@ -20,9 +23,7 @@ import { CarritoService } from '../../services/carrito.service';
 export class MenuComponent implements OnInit, AfterViewInit {
   @ViewChild('headerMenu', { static: false }) headerMenu!: ElementRef;
   @ViewChild('productsContainer', { static: false }) productsContainer!: ElementRef;
-  products$!: Observable<Product[]>;
   categories$!: Observable<Category[]>;
-  selectedCategory: string = 'all';
   selectedType: string = 'restaurant'; // Valor predeterminado
   private firebaseService = inject(FirebaseService);
   private productoService = inject(ProductoService);
@@ -31,8 +32,13 @@ export class MenuComponent implements OnInit, AfterViewInit {
   cantidadCarrito: any;
   carrito: any[] = [];
   total: number = 0;
-  // Categoría seleccionada
-  // selectedCategory: any = null;
+  searchTerm: string = '';
+  filteredProducts: any;
+  products$ = this.firebaseService.getProducts(); // fuente base
+  filteredProducts$ = new BehaviorSubject<any[]>([]);
+  searchTerm$ = new BehaviorSubject<string>('');
+  selectedCategory: string | null = null;
+  category$ = new BehaviorSubject<string>('all');
 
   ngAfterViewInit(): void {
     // this.adjustProductsContainerMargin();
@@ -46,6 +52,20 @@ export class MenuComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
+     // Combinar categoría y término de búsqueda
+     combineLatest([this.products$, this.searchTerm$, this.category$])
+     .pipe(
+       map(([products, term, category]) => {
+         const lowerTerm = term.toLowerCase();
+         return products.filter(product =>
+           (!category || category === 'all' || product.category === category) &&
+           (product.name.toLowerCase().includes(lowerTerm) ||
+            product.description.toLowerCase().includes(lowerTerm) ||
+            product.category.toLowerCase().includes(lowerTerm))
+         );
+       })
+     )
+     .subscribe(filtered => this.filteredProducts$.next(filtered));
     this.selectedType = this.carritoService.getOrderType();
     this.loadAllProducts();
     this.loadCategories();
@@ -64,6 +84,13 @@ export class MenuComponent implements OnInit, AfterViewInit {
   //     this.productsContainer.nativeElement.style.marginTop = `${headerHeight + 60}px`; // Añade un margen adicional de 20px
   //   }
   // }
+
+  // Capturar input
+  onSearch(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchTerm$.next(input.value ?? '');
+  }
+
  
   setHeaderHeightVariable() {
     if (this.headerMenu && this.productsContainer) {
@@ -80,11 +107,17 @@ export class MenuComponent implements OnInit, AfterViewInit {
   }
 
   loadAllProducts() {
-    this.products$ = this.firebaseService.getProducts();
+    this.products$ = this.firebaseService.getProducts().pipe(
+      map(products => products.filter(product => 
+        ['hamburguesa', 'bebida', 'salchipapa'].includes(product.category)
+      ))
+    );
+    
   }
-
+  
   loadCategories() {
-    this.categories$ = this.firebaseService.getCategories();
+    this.categories$ = this.firebaseService.getCategories()
+    
   }
 
   setOrderType(type: string) {
@@ -116,9 +149,7 @@ export class MenuComponent implements OnInit, AfterViewInit {
 
   filterByCategory(category: string) {
     this.selectedCategory = category;
-    this.products$ = category === 'all' 
-      ? this.firebaseService.getProducts() 
-      : this.firebaseService.getProductsByCategory(category);
+    this.category$.next(category);
   }
 
   // Método para añadir un producto al carrito

@@ -13,9 +13,21 @@
     </header>
   
     <!-- 🔹 Botones de En restaurante / Para llevar -->
-    <div class="selection-buttons">
+    <!-- <div class="selection-buttons">
       <button [class.active]="selectedType === 'restaurant'" (click)="setOrderType('restaurant')">En restaurante</button>
       <button [class.active]="selectedType === 'takeaway'" (click)="setOrderType('takeaway')">Para llevar</button>
+    </div> -->
+    <div class="search-wrapper">
+      <span class="search-icon">
+        <mat-icon>search</mat-icon>
+      </span>
+      <input
+        class="search-input"
+        type="text"
+        placeholder="Buscar productos..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch($event)"
+      />
     </div>
   
     <!-- Categorías -->
@@ -32,7 +44,7 @@
 
   <!-- 🔹 Productos -->
   <div class="products-container" #productsContainer>
-    <div *ngFor="let product of products$ | async" class="product-card">
+    <div *ngFor="let product of filteredProducts$ | async" class="product-card">
       <img [src]="product.image" alt="{{ product.name }}">
       <div class="details">
         <h3>{{ product.name }}</h3>

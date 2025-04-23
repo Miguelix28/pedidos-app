@@ -8,10 +8,11 @@ export interface Product {
   description: string;
   price: number;
   image: string;
+  category: string;
 }
 
 export interface Category {
-  id?: string;
+  id: string;
   name: string;
   icon: string;
 }

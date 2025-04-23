@@ -39,62 +39,55 @@
   right: 16px; /* Añade esto */
 }
 
-/* 🔹 Botones de En restaurante / Para llevar */
 .selection-buttons {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  align-items: center;
   width: 100%;
   margin: 0 auto;
-  max-width: 480px;
+  max-width: 400px;
+  background: #f2f2f2;
+  border-radius: 50px;
 }
 
 .selection-buttons button {
   flex: 1;
-  padding: 14px 16px;
-  border-radius: 30px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
   border: none;
-  min-width: 140px;
+  border-radius: 50px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #888888;
+  background-color: transparent;
+  text-align: center;
+  margin: 0 2px;
 }
 
-/* Default (non-active) button */
-.selection-buttons button {
-  color: #CCCCCC; /* Color de texto más claro */
-}
-
-/* Active button */
+/* Botón activo */
 .selection-buttons button.active {
-  background-color: #1E1E1E; /* Negro para el botón activo */
+  background-color: #1E1E1E;
   color: white;
 }
 
-/* Hover state for better UX */
-.selection-buttons button:hover:not(.active) {
-  background-color: #555555; /* Un gris algo más claro al hacer hover */
+/* Hover para inactivos */
+.selection-buttons button:not(.active):hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
-/* Focus state for accessibility */
-.selection-buttons button:focus {
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3); /* Un sutil resplandor blanco */
-}
-
-/* Responsive adjustments */
+/* Responsive */
 @media (max-width: 480px) {
   .selection-buttons {
-    width: 100%;
+    max-width: 360px;
   }
   
   .selection-buttons button {
-    padding: 10px 12px;
-    font-size: 14px;
+    font-size: 13px;
+    padding: 8px 12px;
   }
 }
+
 
 h3 {
   font-size: 16px;
@@ -300,4 +293,59 @@ ul {
   padding-left: 1rem;
   margin: 0;
   font-size: 14px;
+}
+
+.direccion-input {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.direccion-input h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.direccion-input input {
+  padding: 10px;
+  border-radius: 25px;
+  border: 1px solid #e0e0e0;
+  font-size: 14px;
+  background-color: #fff;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 5px 2.6px -1px rgb(0 0 0 / 6%);
+}
+
+.direccion-input input::placeholder {
+  padding: 12px;
+  color: #A8A8A8;;
+  font-size: 12px;
+}
+
+.direccion-input input:focus {
+  outline: none;
+  border-color: #666;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+}
+
+.direccion-input .input-addon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+}
+
+/* Estilo para input inválido */
+.direccion-input .invalid-input {
+  border: 1px solid #ff3b30;
+  background-color: #fff;
+}
+
+/* Mensaje de error */
+.direccion-input .error-message {
+  color: #ff3b30;
+  font-size: 12px;
+  padding-left: 20px;
 }
