@@ -17,7 +17,7 @@
 
     <!-- Acordeón de Personalización -->
     <mat-accordion class="accordion-container">
-      <mat-expansion-panel>
+      <mat-expansion-panel *ngIf="producto?.customization?.exclusions?.length > 0">
         <mat-expansion-panel-header class="expansion-header">
           <mat-panel-title> Personaliza tu pedido </mat-panel-title>
         </mat-expansion-panel-header>
@@ -30,13 +30,13 @@
       </mat-expansion-panel>
 
       <!-- Acordeón de Adiciones -->
-      <mat-expansion-panel>
+      <mat-expansion-panel *ngIf="producto?.customization?.additions?.length > 0">
         <mat-expansion-panel-header class="expansion-header">
-          <mat-panel-title> Adiciones </mat-panel-title>
+          <mat-panel-title> {{titleAddittions}} </mat-panel-title>
         </mat-expansion-panel-header>
 
         <div *ngFor="let addition of producto?.customization?.additions" class="addition-item">
-          <span>Adición de {{ addition.name }} (+${{ addition.price }})</span>
+          <span>{{ addition.name }} +  <strong>${{ addition.price }}</strong></span>
         
           <div class="adicion-contador">
             <button mat-icon-button color="warn" (click)="disminuirAdicion(addition.name)">

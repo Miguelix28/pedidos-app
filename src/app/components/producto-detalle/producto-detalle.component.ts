@@ -25,6 +25,7 @@ export class ProductoDetalleComponent {
   mostrarAdiciones = false;
   exclusionesSeleccionadas: { [key: string]: boolean } = {};
   adicionesSeleccionadas: Record<string, number> = {};
+  titleAddittions: string = 'Adiciones';
 
   constructor(
     private route: ActivatedRoute,
@@ -34,6 +35,11 @@ export class ProductoDetalleComponent {
 
   ngOnInit() {
     const productId = this.route.snapshot.paramMap.get('id');
+    if (productId === 'Arma-tu-Salchi!') {
+      this.titleAddittions = 'Personaliza tu salchi con adiciones';
+    } else {
+      this.titleAddittions = 'Adiciones';
+    }
     if (productId) {
       this.productoService.getProductoById(productId).subscribe(producto => {
         if (!producto) {
@@ -119,9 +125,14 @@ export class ProductoDetalleComponent {
     } else {
       carrito.push(productoParaAgregar);
     }
-  
+    this.iniciarNuevoPedido(); // Reinicia el pedido
     sessionStorage.setItem('carrito', JSON.stringify(carrito));
     this.router.navigate(['/menu']);
+  }
+
+  iniciarNuevoPedido() {
+    localStorage.removeItem('pedidoConfirmado');
+    localStorage.removeItem('estadoPedidoActual');
   }
   
 

@@ -1,6 +1,9 @@
 <div class="carrito-container">
   <!-- Header with close button -->
   <div class="carrito-header">
+    <div class="">
+      <img src="../../../assets/categories/LogotipoN1.png" alt="Logotipo1" class="logo">
+    </div>
     <h2>Resumen de tu pedido</h2>
     <button class="cerrar-btn" (click)="volverAlMenu()">
       <mat-icon>close</mat-icon>
@@ -47,61 +50,111 @@
     <div *ngIf="direccion === '' && formSubmitted" class="error-message">
       Ingresa la dirección de entrega o selecciona
     </div>
-  </div>
 
-  <h3>Resumen de tu pedido</h3>
+    <!-- Método de pago -->
+    <div class="form-group">
+      <h3><label for="metodoPago">Método de pago</label></h3>
+      <div class="input-container select-container">
+        <select id="metodoPago" [(ngModel)]="metodoPago" class="select-input">
+          <option class="option" value="efectivo">Efectivo</option>
+          <option class="option" value="transferencia">Transferencia</option>
+        </select>
+        <div class="select-arrow">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+    </div>  
+    <div *ngIf="metodoPago !== 'transferencia'">
+      <h3><label for="monto">¿Con cuánto cancelas?</label></h3>
+      
+      <input
+        id="monto"
+        type="text"
+        [(ngModel)]="montoDisplay"
+        class="monto-field"
+        placeholder="Ej: $50.000"
+        [ngClass]="{'invalid-input': !montoValido && formSubmitted}"
+        (input)="formatearMonto($event)"
+        (blur)="validarMonto()"
+        #montoInput
+      />
+      <div *ngIf="montoExcedido" class="advertencia-monto">
+        El monto máximo permitido es $10.000.000
+      </div> 
+      <div *ngIf="!montoValido && formSubmitted" class="error-message">
+        Ingresa un monto válido
+      </div>
+    </div>
+  </div>
   
   <ng-container *ngIf="carrito.length > 0; else carritoVacio">
     <!-- Product items -->
-    <div *ngFor="let item of carrito; let i = index" class="producto-carrito">
-      <!-- Imagen del producto -->
-    <img *ngIf="item.image" class="producto-img" [src]="item.image" [alt]="item.name">
-      <div class="producto-info">
-        <div class="producto-detalle">
-          <h4>{{ item.name }}</h4>
-          <p class="precio">${{ item.precioTotal | number }}</p>
-        
-          <ng-container *ngIf="item.customization?.additions?.length > 0">
-            <p class="adiciones">🟢 Adiciones:</p>
-            <ul>
-              <li *ngFor="let add of item.customization.additions">
-                {{ add.nombre }} (x{{ add.cantidad }}) - ${{ add.subtotal | number }}
-              </li>
-            </ul>
-          </ng-container>
-        
-          <ng-container *ngIf="item.customization?.exclusions?.length > 0">
-            <p class="exclusiones">🔴 Sin:</p>
-            <ul>
-              <li *ngFor="let exc of item.customization.exclusions">
-                {{ exc }}
-              </li>
-            </ul>
-          </ng-container>
-        </div>
-        
-        <div class="cantidad-control">
-          <button class="control-btn" (click)="modificarCantidad(i, item.cantidad - 1)">−</button>
-          <span class="cantidad">{{ item.cantidad }}</span>
-          <button class="control-btn" (click)="modificarCantidad(i, item.cantidad + 1)">+</button>
-        </div>
-      </div>
-      
-      
-    </div>
-
+     <div class="acordion-div">
+       <mat-accordion class="accordion-container">
+         <mat-expansion-panel>
+           <mat-expansion-panel-header class="expansion-header">
+             <mat-panel-title>Resumen de tu pedido</mat-panel-title>
+           </mat-expansion-panel-header>
+     
+           <div *ngFor="let item of carrito; let i = index" class="producto-carrito">
+             <!-- Imagen del producto -->
+             <img *ngIf="item.image" class="producto-img" [src]="item.image" [alt]="item.name">
+             <div class="producto-info">
+               <div class="producto-detalle">
+                 <div class="nombre-precio">
+                   <h4>{{ item.name }}</h4>
+                   <p class="precio">${{ item.precioTotal | number }}</p>
+                 </div>
+                 <ng-container *ngIf="item.customization?.additions?.length > 0">
+                   <p class="adiciones">Adiciones</p>
+                   <ul>
+                     <li *ngFor="let add of item.customization.additions">
+                       {{ add.cantidad }} {{ add.nombre }}
+                     </li>
+                   </ul>
+                 </ng-container>
+               
+                 <ng-container *ngIf="item.customization?.exclusions?.length > 0">
+                   <p class="exclusiones">Exclusiones</p>
+                   <ul>
+                     <li *ngFor="let exc of item.customization.exclusions">
+                       {{ exc }}
+                     </li>
+                   </ul>
+                 </ng-container>
+               </div>
+               
+               <div class="cantidad-control">
+                 <button class="control-btn" (click)="modificarCantidad(i, item.cantidad - 1)">−</button>
+                 <span class="cantidad">{{ item.cantidad }}</span>
+                 <button class="control-btn" (click)="modificarCantidad(i, item.cantidad + 1)">+</button>
+               </div>
+             </div>
+           </div>
+         </mat-expansion-panel>
+       </mat-accordion>
+     </div>
+    
     <!-- Order summary -->
     <div class="order-summary">
-      <div class="subtotal">
+      <!-- <div class="subtotal">
         <p>Subtotal</p>
         <p>${{ subtotal | number }}</p>
-      </div>
+      </div> -->
       <div class="total">
         <p><strong>Total tu pedido</strong></p>
         <p><strong>${{ total | number }}</strong></p>
       </div>
       <div class="mensaje-importante">
         <p><strong>Importante:</strong> Nuestros pedidos se realizan por medio de Whatsapp, al seleccionar "confirmar pedido" serás dirigido a la app.</p>
+      </div>
+      <div>
+        <h4>Observaciones</h4>
+        <textarea class="mensajeAdicional" placeholder="Escribe aquí si deseas adicionar o eliminar algún ingrediente en tu pedido" rows="4" cols="50" 
+          [(ngModel)]="mensajeAdicional">
+          </textarea>
       </div>
       <button class="reiniciar-btn" (click)="vaciarCarrito()">
         Reiniciar pedido
@@ -119,8 +172,10 @@
 
 <!-- Confirm order button - Fixed at bottom -->
 <div class="confirmar-pedido-container" *ngIf="mostrarConfirmarPedido">
-  <button class="confirmar-pedido" (click)="irAPagar()">
-    Confirmar pedido
+  <button class="confirmar-pedido" 
+          [disabled]="pedidoConfirmado"
+          [ngClass]="{'boton-deshabilitado': pedidoConfirmado}"
+          (click)="irAPagar()">
+    {{ pedidoConfirmado ? 'Pedido confirmado' : 'Confirmar pedido' }}
   </button>
 </div>
-

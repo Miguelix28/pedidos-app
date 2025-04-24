@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Category, FirebaseService, Product } from '../../services/firebase.service';
 import { ProductoService } from '../../services/producto.service';
@@ -11,16 +11,17 @@ import { CarritoService } from '../../services/carrito.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { SplashScreenComponent } from "../splash-screen/splash-screen.component";
 
 @Component({
   selector: 'app-menu',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, FormsModule],
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, FormsModule, SplashScreenComponent],
   providers: [FirebaseService], 
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css']
 })
-export class MenuComponent implements OnInit, AfterViewInit {
+export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('headerMenu', { static: false }) headerMenu!: ElementRef;
   @ViewChild('productsContainer', { static: false }) productsContainer!: ElementRef;
   categories$!: Observable<Category[]>;
@@ -39,10 +40,18 @@ export class MenuComponent implements OnInit, AfterViewInit {
   searchTerm$ = new BehaviorSubject<string>('');
   selectedCategory: string | null = null;
   category$ = new BehaviorSubject<string>('all');
+  private lastScrollTop = 0;
+  private scrollTimer: any = null;
+  private isScrolling = false;
+  private ngZone = inject(NgZone);
+  showSplash: boolean = false; // Variable para controlar la visibilidad del splash screen
 
   ngAfterViewInit(): void {
     // this.adjustProductsContainerMargin();
-
+    this.ngZone.runOutsideAngular(() => {
+      // Añadir el event listener de scroll al contenedor de productos
+      this.productsContainer.nativeElement.addEventListener('scroll', this.handleScroll.bind(this));
+    });
     if (this.headerMenu) {
       const resizeObserver = new ResizeObserver(() => {
         this.setHeaderHeightVariable();
@@ -51,8 +60,30 @@ export class MenuComponent implements OnInit, AfterViewInit {
     }
   }
 
+  ngOnDestroy() {
+    if (this.productsContainer) {
+      this.productsContainer.nativeElement.removeEventListener('scroll', this.handleScroll);
+    }
+    
+    // Limpiar cualquier timeout pendiente
+    if (this.scrollTimer) {
+      clearTimeout(this.scrollTimer);
+    }
+  }
+
   ngOnInit() {
-     // Combinar categoría y término de búsqueda
+  const splashYaMostrado = localStorage.getItem('splashYaMostrado');
+    if (!splashYaMostrado) {
+      this.showSplash = true;
+
+      setTimeout(() => {
+        this.showSplash = false;
+        localStorage.setItem('splashYaMostrado', 'true'); // guardamos que ya se mostró
+      }, 1000);
+    } else {
+      this.showSplash = false; // si ya se mostró, no mostrarlo de nuevo
+    }
+
      combineLatest([this.products$, this.searchTerm$, this.category$])
      .pipe(
        map(([products, term, category]) => {
@@ -107,12 +138,7 @@ export class MenuComponent implements OnInit, AfterViewInit {
   }
 
   loadAllProducts() {
-    this.products$ = this.firebaseService.getProducts().pipe(
-      map(products => products.filter(product => 
-        ['hamburguesa', 'bebida', 'salchipapa'].includes(product.category)
-      ))
-    );
-    
+    this.products$ = this.firebaseService.getProducts();
   }
   
   loadCategories() {
@@ -148,8 +174,16 @@ export class MenuComponent implements OnInit, AfterViewInit {
   }
 
   filterByCategory(category: string) {
-    this.selectedCategory = category;
-    this.category$.next(category);
+    if (this.selectedCategory === category) {
+      this.selectedCategory = null;
+      this.category$.next('all'); // Mostrará todos los productos
+    } else {
+      this.selectedCategory = category;
+      if(this.selectedCategory === 'Arma tu salchi') {
+        this.router.navigate(['/producto', 'Arma-tu-Salchi!']);
+      }
+      this.category$.next(category);
+    }
   }
 
   // Método para añadir un producto al carrito
@@ -197,5 +231,29 @@ export class MenuComponent implements OnInit, AfterViewInit {
 
   irAlCarrito() {
     this.router.navigate(['/carrito']); // Ajusta la ruta según tu configuración de rutas
+  }
+
+  private handleScroll(_event: any) {
+    // Obtener el contenedor de categorías
+    const categoriesContainer = this.headerMenu.nativeElement.querySelector('.categories-container');
+    
+    // Ocultar categorías cuando comienza el desplazamiento
+    if (!this.isScrolling) {
+      this.isScrolling = true;
+      categoriesContainer.classList.add('hidden');
+    }
+    
+    // Limpiar el timeout anterior
+    if (this.scrollTimer) {
+      clearTimeout(this.scrollTimer);
+    }
+    
+    // Establecer nuevo timeout - las categorías reaparecerán 300ms después de que se detenga el desplazamiento
+    this.scrollTimer = setTimeout(() => {
+      this.ngZone.run(() => {
+        this.isScrolling = false;
+        categoriesContainer.classList.remove('hidden');
+      });
+    }, 300);
   }
 }

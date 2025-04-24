@@ -80,14 +80,14 @@
   background: white;
   padding: 8px 12px;
   border-radius: 25px;
-  border: 1px solid gold;
+  border: 1px solid #F8C64B;
 }
 
 /* Botón de agregar al carrito */
 .agregar-carrito {
   flex: 1;
   margin-left: 10px;
-  background-color: #1e1e1e !important;
+  background-color: #3C3C3B !important;
   height: 100%; /* Matches the altura del contenedor de cantidad */
   display: flex;
   align-items: center;
@@ -121,6 +121,7 @@
   justify-content: space-between;
   align-items: center;
   margin: 8px 0;
+  font-size: 12px;
 }
 
 .adicion-contador {
@@ -160,6 +161,16 @@
 /* Aseg煤rate de que el t铆tulo tambi茅n tenga el mismo fondo */
 .accordion-container .mat-expansion-panel-header {
   background-color: transparent !important;
+}
+
+::ng-deep .accordion-container .mat-expansion-panel-body {
+  background-color: #FFFFFF !important;
+  padding: 16px !important;
+}
+
+::ng-deep .accordion-container .mat-expansion-panel {
+  box-shadow: none !important;
+  border: none !important;
 }
 
 /* Estilo para el botón de regreso superpuesto */

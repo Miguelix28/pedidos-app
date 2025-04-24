@@ -1,10 +1,12 @@
+<app-splash-screen [class.hidden]="!showSplash"></app-splash-screen>
+
 <div class="menu-container">
   <div class="header-menu" #headerMenu>
     <!-- 🔹 Encabezado -->
     <header class="menu-header">
-      <button class="menu-icon">
-        <mat-icon>menu</mat-icon>
-      </button>
+      <div class="">
+        <img src="../../../assets/categories/LogotipoN1.png" alt="Logotipo1" class="logo">
+      </div>
       <h1>Nuestro menú</h1>
       <div class="carrito-container" (click)="irAlCarrito()">
         <img src="assets/categories/carrito.png" alt="Carrito" class="carrito-icon">

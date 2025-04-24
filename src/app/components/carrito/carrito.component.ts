@@ -9,11 +9,12 @@ import { Router } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 @Component({
   selector: 'app-carrito',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule, MatButtonToggleModule, MatListModule, CommonModule,
+  imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule, MatButtonToggleModule, MatListModule, CommonModule,MatExpansionModule,
     FormsModule,],
   templateUrl: './carrito.component.html',
   styleUrls: ['./carrito.component.css']
@@ -28,11 +29,19 @@ export class CarritoComponent implements OnInit {
   showDireccion: boolean = false;
   direccion: string = '';
   formSubmitted: boolean = false;
+  mensajeAdicional: string | undefined; // Mensaje adicional del usuario
+  pedidoConfirmado: boolean = localStorage.getItem('pedidoConfirmado') === 'true';
+  metodoPago: string = 'efectivo';
+  montoNumerico: number = 0;
+  montoDisplay: string = '';
+  montoValido: boolean = true;
+  montoExcedido: boolean = false;
   
   constructor(private router: Router, private carritoService: CarritoService) {
   }
 
   ngOnInit() {
+    this.verificarSiPedidoModificado();
     const carritoStorage = sessionStorage.getItem('carrito');
     this.carrito = carritoStorage ? JSON.parse(carritoStorage) : [];
     console.log('Carrito cargado:', this.carrito); // Verifica en la consola
@@ -69,6 +78,14 @@ export class CarritoComponent implements OnInit {
     }
   
     this.actualizarCarrito();
+    this.iniciarNuevoPedido();
+  }
+
+  iniciarNuevoPedido() {
+    // Resetear estado de confirmación
+    this.pedidoConfirmado = false;
+    localStorage.removeItem('pedidoConfirmado');
+    localStorage.removeItem('estadoPedidoActual');
   }
 
   eliminarProducto(index: number) {
@@ -89,60 +106,85 @@ export class CarritoComponent implements OnInit {
   }
 
   irAPagar() {
-    if (!this.validateDireccion()) {
-      return; // Detiene la ejecución si la validación falla
-    }
-    
-    // Use the order type from the CarritoService
+    if (this.pedidoConfirmado) return;
+
+    if (this.montoExcedido) return;
+
     const orderType = this.carritoService.getOrderType();
   
-    // Construir el mensaje del pedido con formato más amigable
+    // Forzar validaciones antes de salir
+    this.formSubmitted = true;
+  
+    if (orderType === 'delivery') {
+      this.validateDireccion();     // actualiza estado de dirección
+      this.validarMonto();          // actualiza montoValido
+  
+      if (
+        !this.direccion || 
+        !this.metodoPago ||
+        (this.metodoPago === 'efectivo' && !this.montoValido)
+      ) {
+        return;
+      }
+    }
+  
+    // 🟢 Si todo está bien, continúa con el mensaje y redirección
+    this.pedidoConfirmado = true;
+    localStorage.setItem('pedidoConfirmado', 'true');
+    localStorage.removeItem('splashYaMostrado');
+  
+    // Construir mensaje
     let mensaje = "📦 *Resumen del Pedido* 📦\n\n";
-    
-    // Agregar productos y cantidades con más detalle
+  
     this.carrito.forEach(item => {
-      // Línea principal del producto
       mensaje += `*${item.cantidad}x ${item.name}* - $${(item.price * item.cantidad).toLocaleString()}\n`;
-    
-      // Manejar adiciones de manera más detallada
+  
       if (item.customization?.additions?.length > 0) {
         const adicionesTexto = item.customization.additions.map((add: any) => {
           return `${add.nombre} (x${add.cantidad})`;
         }).join(', ');
         mensaje += `  🟢 Adiciones: ${adicionesTexto}\n`;
       }
-    
-      // Manejar exclusiones de manera más detallada
-      if (item.customization?.exclusions && item.customization.exclusions.length > 0) {
+  
+      if (item.customization?.exclusions?.length > 0) {
         mensaje += `  🔴 Sin: ${item.customization.exclusions.join(', ')}\n`;
       }
-    
-      // Separador entre productos
+  
       mensaje += "\n";
     });
-    
-    // Desglose de totales con emojis y formato
+  
     mensaje += `💰 *Subtotal*: $${this.subtotal.toLocaleString()}\n`;
     mensaje += `🎉 *Total*: $${this.total.toLocaleString()}\n\n`;
-    
-    // Tipo de pedido con información de dirección si es delivery
+  
     if (orderType === 'delivery') {
       mensaje += `🛵 *Tipo de Pedido*: Entrega a Domicilio\n`;
       mensaje += `📍 *Dirección*: ${this.direccion}\n`;
+      mensaje += `💳 *Método de Pago*: ${this.metodoPago}\n`;
+  
+      if (this.metodoPago === 'efectivo') {
+        mensaje += `💵 *Pagas con*: ${this.montoDisplay}\n`;
+      }
     } else if (orderType === 'takeaway') {
       mensaje += `🥡 *Tipo de Pedido*: Para llevar\n`;
     } else {
       mensaje += `🍽️ *Tipo de Pedido*: Para comer en el restaurante\n`;
     }
-    
-    // Mensaje final
-    mensaje += "\n¡Gracias por tu pedido! 🙌";
-    
-    // Redirigir a WhatsApp con el mensaje
-    const numeroDestino = "573165345924"; // Número en formato internacional SIN "+"
+  
+    if (this.mensajeAdicional && this.mensajeAdicional.trim()) {
+      mensaje += `✉️ *Observaciones del pedido*: ${this.mensajeAdicional}\n`;
+    }
+  
+    mensaje += "\n¡Gracias por tu compra! 🙌";
+  
+    this.pedidoConfirmado = true;
+    localStorage.setItem('pedidoConfirmado', 'true');
+    localStorage.removeItem('splashYaMostrado');
+  
+    const numeroDestino = "573165345924";
     const urlWhatsApp = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
     window.location.href = urlWhatsApp;
   }
+  
 
   volverAlMenu() {
     this.router.navigate(['/menu']);
@@ -212,5 +254,108 @@ export class CarritoComponent implements OnInit {
       return false;
     }
     return true;
+  }
+
+  guardarEstadoPedidoActual() {
+    // Guardar información del carrito para comparar más tarde
+    const estadoCarrito = this.carrito.map(item => ({
+      id: item.id,
+      cantidad: item.cantidad,
+      customization: JSON.stringify(item.customization || {})
+    }));
+    
+    // Guardar dirección y tipo de pedido
+    const datosActuales = {
+      carrito: estadoCarrito,
+      orderType: this.carritoService.getOrderType(),
+      direccion: this.direccion,
+      mensajeAdicional: this.mensajeAdicional
+    };
+    
+    localStorage.setItem('estadoPedidoActual', JSON.stringify(datosActuales));
+  }
+  
+  // Método para verificar si el pedido ha sido modificado
+  verificarSiPedidoModificado() {
+    // Si no hay un pedido confirmado, no hay nada que verificar
+    if (localStorage.getItem('pedidoConfirmado') !== 'true') {
+      return false;
+    }
+    
+    // Obtener estado guardado
+    const estadoGuardado = JSON.parse(localStorage.getItem('estadoPedidoActual') || '{}');
+    
+    // Si no hay estado guardado, considerarlo como modificado
+    if (!estadoGuardado.carrito) {
+      return true;
+    }
+    
+    // Verificar si la cantidad de productos cambió
+    if (estadoGuardado.carrito.length !== this.carrito.length) {
+      this.reactivarBoton();
+      return true;
+    }
+    
+    // Verificar si algún producto cambió (ID, cantidad o personalización)
+    const productoModificado = this.carrito.some((item, index) => {
+      const itemGuardado = estadoGuardado.carrito[index];
+      return (
+        item.id !== itemGuardado.id ||
+        item.cantidad !== itemGuardado.cantidad ||
+        JSON.stringify(item.customization || {}) !== itemGuardado.customization
+      );
+    });
+    
+    // Verificar si cambió el tipo de pedido
+    const tipoModificado = estadoGuardado.orderType !== this.carritoService.getOrderType();
+    
+    // Verificar si cambió la dirección
+    const direccionModificada = estadoGuardado.direccion !== this.direccion;
+    
+    // Verificar si cambió el mensaje adicional
+    const mensajeModificado = estadoGuardado.mensajeAdicional !== this.mensajeAdicional;
+    
+    // Si hubo alguna modificación
+    if (productoModificado || tipoModificado || direccionModificada || mensajeModificado) {
+      this.reactivarBoton();
+      return true;
+    }
+    
+    return false;
+  }
+  
+  // Método para reactivar el botón
+  reactivarBoton() {
+    this.pedidoConfirmado = false;
+    localStorage.setItem('pedidoConfirmado', 'false');
+  }
+
+  formatearMonto(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let value = input.value.replace(/\D/g, '');
+  
+    if (value) {
+      let numericValue = parseInt(value);
+      if (numericValue > 10000000) {
+        this.montoExcedido = true;
+        numericValue = 10000000;
+      } else {
+        this.montoExcedido = false;
+      }
+      this.montoDisplay = `$${numericValue.toLocaleString('es-CO')}`;
+    } else {
+      this.montoDisplay = '';
+      this.montoExcedido = false;
+    }
+  }
+  
+  
+  formatearNumero(num: number): string {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  }
+  
+  validarMonto() {
+    const valorNumerico = Number(this.montoDisplay.replace(/[^0-9]/g, ''));
+    this.montoValido = !isNaN(valorNumerico) && valorNumerico > 0 && valorNumerico <= 10000000; // Máximo: 10 millones
   }
 }
