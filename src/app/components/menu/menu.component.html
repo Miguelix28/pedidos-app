@@ -8,7 +8,7 @@
         <img src="../../../assets/categories/LogotipoN1.png" alt="Logotipo1" class="logo">
       </div>
       <h1>Nuestro menú</h1>
-      <div class="carrito-container" (click)="irAlCarrito()">
+      <div class="carrito-container" (click)="canOrder && irAlCarrito()">
         <img src="assets/categories/carrito.png" alt="Carrito" class="carrito-icon">
         <span *ngIf="cantidadCarrito > 0" class="notificacion">{{ cantidadCarrito }}</span>
       </div>
@@ -53,14 +53,23 @@
         <p>{{ product.description }}</p>
         <span class="price">${{ product.price | number:'1.0-2' }}</span>
       </div>
-      <button (click)="verDetalles(product)" class="add-to-cart"></button>
+      <button (click)="verDetalles(product)" class="add-to-cart" [disabled]="!canOrder"></button>
     </div>
   </div>
 
   <!-- 🔹 Botón "Ver carrito" (Se muestra solo si hay productos en el carrito) -->
-  <button *ngIf="carrito.length > 0" class="boton-carrito" (click)="irAlCarrito()">
+  <button *ngIf="carrito.length > 0 && canOrder" class="boton-carrito" (click)="irAlCarrito()">
     <span class="">Ver pedido</span>
     <span class="">{{ total | currency:'COP':'$':'1.0-0' }}</span>
     <!-- 🛒 Ver carrito - {{ total | currency }} -->
   </button>
+
+  <!-- Modal de horario cerrado -->
+  <div *ngIf="showClosedModal" class="modal-overlay" (click)="closeModal()">
+    <div class="closed-message" (click)="$event.stopPropagation()">
+      <h3>Horario cerrado</h3>
+      <p>Por el momento no hay servicio. Nuestro horario de atención es de 6:00 PM a 11:00 PM.</p>
+      <button (click)="closeModal()">Entendido</button>
+    </div>
+  </div>
 </div>

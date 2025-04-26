@@ -12,6 +12,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { SplashScreenComponent } from "../splash-screen/splash-screen.component";
+import moment from 'moment-timezone';
 
 @Component({
   selector: 'app-menu',
@@ -45,12 +46,15 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   private isScrolling = false;
   private ngZone = inject(NgZone);
   showSplash: boolean = false; // Variable para controlar la visibilidad del splash screen
+  isOpen: boolean = false;
+  canOrder: boolean = false;
+  showClosedModal: boolean = false;
 
   ngAfterViewInit(): void {
     // this.adjustProductsContainerMargin();
     this.ngZone.runOutsideAngular(() => {
       // Añadir el event listener de scroll al contenedor de productos
-      this.productsContainer.nativeElement.addEventListener('scroll', this.handleScroll.bind(this));
+      // this.productsContainer.nativeElement.addEventListener('scroll', this.handleScroll.bind(this));
     });
     if (this.headerMenu) {
       const resizeObserver = new ResizeObserver(() => {
@@ -62,7 +66,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.productsContainer) {
-      this.productsContainer.nativeElement.removeEventListener('scroll', this.handleScroll);
+      // this.productsContainer.nativeElement.removeEventListener('scroll', this.handleScroll);
     }
     
     // Limpiar cualquier timeout pendiente
@@ -72,6 +76,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+  this.checkOpeningHours();
   const splashYaMostrado = localStorage.getItem('splashYaMostrado');
     if (!splashYaMostrado) {
       this.showSplash = true;
@@ -233,27 +238,45 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigate(['/carrito']); // Ajusta la ruta según tu configuración de rutas
   }
 
-  private handleScroll(_event: any) {
-    // Obtener el contenedor de categorías
-    const categoriesContainer = this.headerMenu.nativeElement.querySelector('.categories-container');
-    
-    // Ocultar categorías cuando comienza el desplazamiento
-    if (!this.isScrolling) {
-      this.isScrolling = true;
-      categoriesContainer.classList.add('hidden');
+  checkOpeningHours() {
+    const currentHour = moment().tz("America/Bogota").hours();
+    this.canOrder = currentHour >= 18 && currentHour < 23;
+    if (!this.canOrder) {
+      setTimeout(() => {
+        this.showClosedMessage();
+      }, 1000);
     }
-    
-    // Limpiar el timeout anterior
-    if (this.scrollTimer) {
-      clearTimeout(this.scrollTimer);
-    }
-    
-    // Establecer nuevo timeout - las categorías reaparecerán 300ms después de que se detenga el desplazamiento
-    this.scrollTimer = setTimeout(() => {
-      this.ngZone.run(() => {
-        this.isScrolling = false;
-        categoriesContainer.classList.remove('hidden');
-      });
-    }, 300);
   }
+
+  showClosedMessage() {
+    this.showClosedModal = true;
+  }
+  
+  closeModal() {
+    this.showClosedModal = false;
+  }
+
+  // private handleScroll(_event: any) {
+  //   // Obtener el contenedor de categorías
+  //   const categoriesContainer = this.headerMenu.nativeElement.querySelector('.categories-container');
+    
+  //   // Ocultar categorías cuando comienza el desplazamiento
+  //   if (!this.isScrolling) {
+  //     this.isScrolling = true;
+  //     categoriesContainer.classList.add('hidden');
+  //   }
+    
+  //   // Limpiar el timeout anterior
+  //   if (this.scrollTimer) {
+  //     clearTimeout(this.scrollTimer);
+  //   }
+    
+  //   // Establecer nuevo timeout - las categorías reaparecerán 300ms después de que se detenga el desplazamiento
+  //   this.scrollTimer = setTimeout(() => {
+  //     this.ngZone.run(() => {
+  //       this.isScrolling = false;
+  //       categoriesContainer.classList.remove('hidden');
+  //     });
+  //   }, 300);
+  // }
 }

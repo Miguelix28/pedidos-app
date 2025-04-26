@@ -26,6 +26,8 @@ export class ProductoDetalleComponent {
   exclusionesSeleccionadas: { [key: string]: boolean } = {};
   adicionesSeleccionadas: Record<string, number> = {};
   titleAddittions: string = 'Adiciones';
+  titlePorciones: string = 'Cantidad de personas';
+  currentStep: number = 0;
 
   constructor(
     private route: ActivatedRoute,
@@ -37,6 +39,7 @@ export class ProductoDetalleComponent {
     const productId = this.route.snapshot.paramMap.get('id');
     if (productId === 'Arma-tu-Salchi!') {
       this.titleAddittions = 'Personaliza tu salchi con adiciones';
+      this.titlePorciones = 'Porción de papa + salchicha y salsas';
     } else {
       this.titleAddittions = 'Adiciones';
     }
@@ -45,7 +48,15 @@ export class ProductoDetalleComponent {
         if (!producto) {
           this.router.navigate(['/menu']);
         }
+        console.log(producto);
+        if (producto.category === 'salchipapa') {
+          this.titlePorciones = 'Cantidad de personas';
+        }
         this.producto = producto;
+        this.producto.cantidadPersonas = this.producto.cantidadPersonas || 1;
+        this.producto.precioUnitario = this.producto.precioUnitario || this.producto.price;
+        this.producto.price = this.producto.precioUnitario * this.producto.cantidadPersonas;
+
       });
     }
   }
@@ -83,6 +94,26 @@ export class ProductoDetalleComponent {
     }
   }
 
+  agregarCantidadPersonas() {
+    const categoria = this.producto?.category;
+  
+    if (categoria === 'salchipapa' && this.producto.cantidadPersonas < 3) {
+      this.producto.cantidadPersonas++;
+    } else if (categoria === 'Arma tu salchi') {
+      this.producto.cantidadPersonas++;
+    }
+  
+    this.producto.price = this.producto.precioUnitario * this.producto.cantidadPersonas;
+  }
+  
+  disminuirCantidadPersonas() {
+    if (this.producto.cantidadPersonas > 1) {
+      this.producto.cantidadPersonas--;
+      this.producto.price = this.producto.precioUnitario * this.producto.cantidadPersonas;
+    }
+  }
+  
+
 
   agregarAlCarrito() {
     let carrito = JSON.parse(sessionStorage.getItem('carrito') || '[]');
@@ -102,17 +133,30 @@ export class ProductoDetalleComponent {
       });
   
     const precioTotal = this.getPrecioTotal(); // usamos tu método actual
-  
-    const productoParaAgregar = {
-      ...this.producto,
-      cantidad: this.cantidad,
-      customization: {
-        exclusions: exclusiones,
-        additions: adiciones
-      },
-      precioTotal: this.getPrecioTotal()// << guardamos el precio con adiciones incluidas
-    };
-  
+    let productoParaAgregar = {}
+    if (this.producto.category === 'Arma tu salchi') {
+      productoParaAgregar = {
+        ...this.producto,
+        // NroBases: this.producto.cantidadPersonas,
+        cantidad: this.cantidad,
+        customization: {
+          exclusions: exclusiones,
+          additions: adiciones
+        },
+        precioTotal: this.getPrecioTotal()// << guardamos el precio con adiciones incluidas
+      };
+    } else {
+      productoParaAgregar = {
+        ...this.producto,
+        // NroPersonas: this.producto.cantidadPersonas,
+        cantidad: this.cantidad,
+        customization: {
+          exclusions: exclusiones,
+          additions: adiciones
+        },
+        precioTotal: this.getPrecioTotal()// << guardamos el precio con adiciones incluidas
+      };
+    }
     const index = carrito.findIndex((p: any) =>
       p.id === this.producto.id &&
       JSON.stringify(p.customization.exclusions) === JSON.stringify(exclusiones) &&
@@ -148,5 +192,17 @@ export class ProductoDetalleComponent {
     }
   
     return (precioBase + totalAdiciones) * this.cantidad; // 👈 Adiciones también se multiplican
+  }
+
+  nextStep() {
+    if (this.currentStep < 2) { // 2 porque tienes 3 acordeones (0,1,2)
+      this.currentStep++;
+    }
+  }
+  
+  previousStep() {
+    if (this.currentStep > 0) {
+      this.currentStep--;
+    }
   }
 }

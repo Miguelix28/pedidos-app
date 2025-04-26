@@ -93,7 +93,7 @@
     <!-- Product items -->
      <div class="acordion-div">
        <mat-accordion class="accordion-container">
-         <mat-expansion-panel>
+         <mat-expansion-panel [expanded]="true">
            <mat-expansion-panel-header class="expansion-header">
              <mat-panel-title>Resumen de tu pedido</mat-panel-title>
            </mat-expansion-panel-header>
@@ -105,8 +105,26 @@
                <div class="producto-detalle">
                  <div class="nombre-precio">
                    <h4>{{ item.name }}</h4>
-                   <p class="precio">${{ item.precioTotal | number }}</p>
+                   <p class="precio"><strong>${{ item.precioTotal | number }}</strong></p>
                  </div>
+                 <ng-container *ngIf="item.category === 'salchipapa'">
+                  <!-- <p class="adiciones">Para</p> -->
+                  <ul>
+                    <li>
+                      Para {{ item.cantidadPersonas }} Persona(s)
+                    </li>
+                  </ul>
+                </ng-container>
+
+                <ng-container *ngIf="item.category === 'Arma tu salchi'">
+                  <!-- <p class="adiciones">Nro Bases</p> -->
+                  <ul>
+                    <li>
+                      Bases {{ item.cantidadPersonas }}
+                    </li>
+                  </ul>
+                </ng-container>
+
                  <ng-container *ngIf="item.customization?.additions?.length > 0">
                    <p class="adiciones">Adiciones</p>
                    <ul>

@@ -13,13 +13,38 @@
   <div class="producto-info">
     <h2 class="titulo">{{ producto?.name }}</h2>
     <p class="producto-descripcion">{{ producto?.description }}</p>
-    <strong class="producto-precio">${{ producto?.price | number }}</strong>
+    <div>
+      <strong class="producto-precio">${{ producto?.price | number }}</strong>
+      
+    </div>
+    
 
-    <!-- Acordeón de Personalización -->
+        <!-- Acordeón de Personalización -->
     <mat-accordion class="accordion-container">
-      <mat-expansion-panel *ngIf="producto?.customization?.exclusions?.length > 0">
+      
+      <!-- Acordeón 1: Cantidad de porciones -->
+      <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto.category === 'salchipapa' || producto.category === 'Arma tu salchi'">
         <mat-expansion-panel-header class="expansion-header">
-          <mat-panel-title> Personaliza tu pedido </mat-panel-title>
+          <mat-panel-title>Cantidad de porciones</mat-panel-title>
+        </mat-expansion-panel-header>
+        <div class="addition-item">
+          <span>{{ titlePorciones }}</span>
+          <div class="adicion-contador">
+            <button mat-icon-button color="warn" (click)="disminuirCantidadPersonas()">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <span>{{ producto.cantidadPersonas }}</span>
+            <button mat-icon-button color="primary" (click)="agregarCantidadPersonas()">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-expansion-panel>
+
+      <!-- Acordeón 2: Exclusiones -->
+      <mat-expansion-panel [expanded]="currentStep === 1" *ngIf="producto?.customization?.exclusions?.length > 0">
+        <mat-expansion-panel-header class="expansion-header">
+          <mat-panel-title>Personaliza tu pedido</mat-panel-title>
         </mat-expansion-panel-header>
 
         <div *ngFor="let exclusion of producto?.customization?.exclusions" class="checkbox-item">
@@ -29,22 +54,20 @@
         </div>
       </mat-expansion-panel>
 
-      <!-- Acordeón de Adiciones -->
-      <mat-expansion-panel *ngIf="producto?.customization?.additions?.length > 0">
+      <!-- Acordeón 3: Adiciones -->
+      <mat-expansion-panel [expanded]="currentStep === 2" *ngIf="producto?.customization?.additions?.length > 0">
         <mat-expansion-panel-header class="expansion-header">
-          <mat-panel-title> {{titleAddittions}} </mat-panel-title>
+          <mat-panel-title>{{ titleAddittions }}</mat-panel-title>
         </mat-expansion-panel-header>
 
         <div *ngFor="let addition of producto?.customization?.additions" class="addition-item">
-          <span>{{ addition.name }} +  <strong>${{ addition.price }}</strong></span>
-        
+          <span>{{ addition.name }} + <strong>${{ addition.price }}</strong></span>
+
           <div class="adicion-contador">
             <button mat-icon-button color="warn" (click)="disminuirAdicion(addition.name)">
               <mat-icon>remove</mat-icon>
             </button>
-        
             <span>{{ adicionesSeleccionadas[addition.name] || 0 }}</span>
-        
             <button mat-icon-button color="primary" (click)="agregarAdicion(addition.name)">
               <mat-icon>add</mat-icon>
             </button>
@@ -52,6 +75,23 @@
         </div>
       </mat-expansion-panel>
     </mat-accordion>
+
+    <!-- Botones de navegación -->
+    <div class="botones-navegacion-container">
+      <button mat-raised-button
+              class="boton-navegacion"
+              [disabled]="currentStep === 0"
+              (click)="previousStep()">
+        Anterior
+      </button>
+    
+      <button mat-raised-button
+              class="boton-navegacion"
+              [disabled]="currentStep === 2"
+              (click)="nextStep()">
+        Siguiente
+      </button>
+    </div>
 
   </div> <!-- Cierre de producto-info -->
   <!-- Contenedor de botones en la parte inferior -->
