@@ -11,28 +11,32 @@
   </div>
 
   <!-- Tabs de selección de tipo de orden -->
-  <div class="selection-buttons">
-    <button
-      [class.active]="selectedType === 'takeaway'"
-      (click)="setOrderType('takeaway')"
-    >
-      <span>Recoger</span>
-    </button>
-    
-    <button
-      [class.active]="selectedType === 'restaurant'"
-      (click)="setOrderType('restaurant')"
-    >
-      <span>Restaurante</span>
-    </button>
-    
-    <button
-      [class.active]="selectedType === 'delivery'"
-      (click)="setOrderType('delivery')"
-    >
-      <span>Domicilio</span>
-    </button>
-  </div>
+<div class="selection-buttons" [class.error]="formSubmitted && !selectedType">
+  <button
+    [class.active]="selectedType === 'takeaway'"
+    (click)="setOrderType('takeaway')"
+  >
+    <span>Recoger</span>
+  </button>
+  
+  <button
+    [class.active]="selectedType === 'restaurant'"
+    (click)="setOrderType('restaurant')"
+  >
+    <span>Restaurante</span>
+  </button>
+  
+  <button
+    [class.active]="selectedType === 'delivery'"
+    (click)="setOrderType('delivery')"
+  >
+    <span>Domicilio</span>
+  </button>
+</div>
+
+<div *ngIf="formSubmitted && !selectedType" class="error-message">
+  Debes seleccionar el tipo de pedido
+</div>
 
   <div *ngIf="showDireccion" class="direccion-input">
     <h3><label for="direccion">Dirección de entrega</label></h3>
@@ -103,11 +107,14 @@
              <img *ngIf="item.image" class="producto-img" [src]="item.image" [alt]="item.name">
              <div class="producto-info">
                <div class="producto-detalle">
-                 <div class="nombre-precio">
-                   <h4>{{ item.name }}</h4>
-                   <p class="precio"><strong>${{ item.precioTotal | number }}</strong></p>
-                 </div>
-                 <ng-container *ngIf="item.category === 'salchipapa'">
+                <div class="nombre-precio">
+                  <div class="nombre-categoria">
+                    <span class="categoria">{{ item.category }}</span>
+                    <h4>{{ item.name }}</h4>
+                  </div>
+                  <p class="precio"><strong>${{ item.precioTotal | number }}</strong></p>
+                </div>
+                 <ng-container *ngIf="item.category === 'Salchipapa'">
                   <!-- <p class="adiciones">Para</p> -->
                   <ul>
                     <li>
@@ -142,6 +149,15 @@
                      </li>
                    </ul>
                  </ng-container>
+
+                 <ng-container *ngIf="item.customization?.complements?.length > 0">
+                  <p class="complementos">Complementos</p>
+                  <ul>
+                    <li *ngFor="let add of item.customization.complements">
+                      {{ add.cantidad }} {{ add.nombre }}
+                    </li>
+                  </ul>
+                </ng-container>
                </div>
                
                <div class="cantidad-control">

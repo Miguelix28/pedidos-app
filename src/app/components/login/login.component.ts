@@ -31,9 +31,7 @@ export class LoginComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     // ⚠️ Espera a que se complete el redirect de Google si lo hubo
     try {
-      console.log('Esperando resultado de redirección...');
       const result = await this.authService.getRedirectAuthResult();
-      console.log('Resultado del redirect:', result);
       const user = result?.user;
       
       if (user) {

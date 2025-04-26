@@ -23,7 +23,7 @@
     <mat-accordion class="accordion-container">
       
       <!-- Acordeón 1: Cantidad de porciones -->
-      <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto.category === 'salchipapa' || producto.category === 'Arma tu salchi'">
+      <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto.category === 'Arma tu salchi'">
         <mat-expansion-panel-header class="expansion-header">
           <mat-panel-title>Cantidad de porciones</mat-panel-title>
         </mat-expansion-panel-header>
@@ -38,6 +38,20 @@
               <mat-icon>add</mat-icon>
             </button>
           </div>
+        </div>
+      </mat-expansion-panel>
+
+      <!-- Acordeón 1: Cantidad de personas -->
+      <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto.category === 'Salchipapa'">
+        <mat-expansion-panel-header class="expansion-header">
+          <mat-panel-title>Cantidad de porciones</mat-panel-title>
+        </mat-expansion-panel-header>
+        <div *ngFor="let size of producto?.customization?.size" class="checkbox-item">
+          <mat-radio-group [(ngModel)]="sizeSeleccionada" (ngModelChange)="actualizarCantidadPorSize()">
+            <mat-radio-button [value]="size">
+              {{ size }}
+            </mat-radio-button>
+          </mat-radio-group>
         </div>
       </mat-expansion-panel>
 
@@ -74,7 +88,29 @@
           </div>
         </div>
       </mat-expansion-panel>
-    </mat-accordion>
+
+      <!-- Acordeón 4: Adiciones -->
+      <mat-expansion-panel [expanded]="currentStep === 3" *ngIf="producto?.customization?.complements?.length > 0">
+        <mat-expansion-panel-header class="expansion-header">
+          <mat-panel-title>Complementos</mat-panel-title>
+        </mat-expansion-panel-header>
+  
+        <div *ngFor="let complements of producto?.customization?.complements" class="addition-item">
+          <span>{{ complements.name }} + <strong>${{ complements.price }}</strong></span>
+  
+          <div class="adicion-contador">
+            <button mat-icon-button color="warn" (click)="disminuirComplementosn(complements.name)">
+              <mat-icon>remove</mat-icon>
+            </button>
+            <span>{{ complementosSeleccionados[complements.name] || 0 }}</span>
+            <button mat-icon-button color="primary" (click)="agregarComplementos(complements.name)">
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+        </div>
+      </mat-expansion-panel>
+    </mat-accordion>    
+
 
     <!-- Botones de navegación -->
     <div class="botones-navegacion-container">
@@ -87,7 +123,7 @@
     
       <button mat-raised-button
               class="boton-navegacion"
-              [disabled]="currentStep === 2"
+              [disabled]="currentStep === 3"
               (click)="nextStep()">
         Siguiente
       </button>

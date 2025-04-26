@@ -7,13 +7,14 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatRadioModule } from "@angular/material/radio";
 
 @Component({
   selector: 'app-producto-detalle',
   standalone: true,
   imports: [CommonModule, FormsModule, MatExpansionModule,
     MatCheckboxModule,
-    MatButtonModule,
+    MatButtonModule,  MatRadioModule,
     MatIconModule],
   templateUrl: './producto-detalle.component.html',
   styleUrls: ['./producto-detalle.component.css']
@@ -24,7 +25,9 @@ export class ProductoDetalleComponent {
   mostrarPersonalizacion = false;
   mostrarAdiciones = false;
   exclusionesSeleccionadas: { [key: string]: boolean } = {};
+  sizeSeleccionada: string = 'Personal';
   adicionesSeleccionadas: Record<string, number> = {};
+  complementosSeleccionados: Record<string, number> = {};
   titleAddittions: string = 'Adiciones';
   titlePorciones: string = 'Cantidad de personas';
   currentStep: number = 0;
@@ -48,8 +51,7 @@ export class ProductoDetalleComponent {
         if (!producto) {
           this.router.navigate(['/menu']);
         }
-        console.log(producto);
-        if (producto.category === 'salchipapa') {
+        if (producto.category === 'Salchipapa') {
           this.titlePorciones = 'Cantidad de personas';
         }
         this.producto = producto;
@@ -94,10 +96,29 @@ export class ProductoDetalleComponent {
     }
   }
 
+  // Método para agregar una complementos y contar la cantidad
+  agregarComplementos(complements: string) {
+    if (!this.complementosSeleccionados[complements]) {
+      this.complementosSeleccionados[complements] = 1;
+    } else {
+      this.complementosSeleccionados[complements]++;
+    }
+  }
+
+  // Método para disminuir la cantidad de una adición
+  disminuirComplementosn(complements: string) {
+    if (this.complementosSeleccionados[complements] && this.complementosSeleccionados[complements] > 0) {
+      this.complementosSeleccionados[complements]--;
+      if (this.complementosSeleccionados[complements] === 0) {
+        delete this.complementosSeleccionados[complements]; // Elimina la adición si llega a 0
+      }
+    }
+  }
+
   agregarCantidadPersonas() {
     const categoria = this.producto?.category;
   
-    if (categoria === 'salchipapa' && this.producto.cantidadPersonas < 3) {
+    if (categoria === 'Salchipapa' && this.producto.cantidadPersonas < 3) {
       this.producto.cantidadPersonas++;
     } else if (categoria === 'Arma tu salchi') {
       this.producto.cantidadPersonas++;
@@ -111,6 +132,20 @@ export class ProductoDetalleComponent {
       this.producto.cantidadPersonas--;
       this.producto.price = this.producto.precioUnitario * this.producto.cantidadPersonas;
     }
+  }
+
+  actualizarCantidadPorSize() {
+    if (this.sizeSeleccionada.includes('Personal')) {
+      this.producto.cantidadPersonas = 1;
+    } else if (this.sizeSeleccionada.includes('2')) {
+      this.producto.cantidadPersonas = 2;
+    } else if (this.sizeSeleccionada.includes('3')) {
+      this.producto.cantidadPersonas = 3;
+    } else {
+      this.producto.cantidadPersonas = 1;
+    }
+  
+    this.producto.price = this.producto.precioUnitario * this.producto.cantidadPersonas;
   }
   
 
@@ -131,6 +166,18 @@ export class ProductoDetalleComponent {
           subtotal: (additionInfo?.price || 0) * cantidad
         };
       });
+
+      const complementos = Object.entries(this.complementosSeleccionados)
+      .filter(([_, cantidad]) => cantidad > 0)
+      .map(([nombre, cantidad]) => {
+        const complementsInfo = this.producto.customization.complements.find((a: any) => a.name === nombre);
+        return {
+          nombre,
+          cantidad,
+          precioUnitario: complementsInfo?.price || 0,
+          subtotal: (complementsInfo?.price || 0) * cantidad
+        };
+      });
   
     const precioTotal = this.getPrecioTotal(); // usamos tu método actual
     let productoParaAgregar = {}
@@ -141,7 +188,8 @@ export class ProductoDetalleComponent {
         cantidad: this.cantidad,
         customization: {
           exclusions: exclusiones,
-          additions: adiciones
+          additions: adiciones,
+          complements: complementos
         },
         precioTotal: this.getPrecioTotal()// << guardamos el precio con adiciones incluidas
       };
@@ -152,15 +200,17 @@ export class ProductoDetalleComponent {
         cantidad: this.cantidad,
         customization: {
           exclusions: exclusiones,
-          additions: adiciones
+          additions: adiciones,
+          complements: complementos
         },
-        precioTotal: this.getPrecioTotal()// << guardamos el precio con adiciones incluidas
+        precioTotal: this.getPrecioTotal()
       };
     }
     const index = carrito.findIndex((p: any) =>
       p.id === this.producto.id &&
       JSON.stringify(p.customization.exclusions) === JSON.stringify(exclusiones) &&
-      JSON.stringify(p.customization.additions) === JSON.stringify(adiciones)
+      JSON.stringify(p.customization.additions) === JSON.stringify(adiciones) &&
+      JSON.stringify(p.customization.complements) === JSON.stringify(complementos)
     );
   
     if (index !== -1) {
@@ -183,6 +233,7 @@ export class ProductoDetalleComponent {
   getPrecioTotal(): number {
     let precioBase = this.producto?.price || 0;
     let totalAdiciones = 0;
+    let totalComplementos = 0;
   
     if (this.producto?.customization?.additions) {
       for (const addition of this.producto.customization.additions) {
@@ -190,12 +241,19 @@ export class ProductoDetalleComponent {
         totalAdiciones += addition.price * cantidad;
       }
     }
+
+    if (this.producto?.customization?.complements) {
+      for (const complement of this.producto.customization.complements) {
+        const cantidad = this.complementosSeleccionados[complement.name] || 0;
+        totalComplementos += complement.price * cantidad;
+      }
+    }
   
-    return (precioBase + totalAdiciones) * this.cantidad; // 👈 Adiciones también se multiplican
+    return (precioBase + totalAdiciones + totalComplementos) * this.cantidad; // 👈 Adiciones también se multiplican
   }
 
   nextStep() {
-    if (this.currentStep < 2) { // 2 porque tienes 3 acordeones (0,1,2)
+    if (this.currentStep < 3) { // 2 porque tienes 3 acordeones (0,1,2)
       this.currentStep++;
     }
   }

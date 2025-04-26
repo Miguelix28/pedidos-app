@@ -23,7 +23,7 @@ export class CarritoComponent implements OnInit {
   carrito: any[] = [];
   subtotal: number = 0;
   total: number = 0;
-  selectedType: string = 'restaurant'; // Valor predeterminado
+  selectedType: string = ''; // Valor predeterminado
   mostrarConfirmarPedido: boolean = false;
   orderType: string | undefined;
   showDireccion: boolean = false;
@@ -44,7 +44,6 @@ export class CarritoComponent implements OnInit {
     this.verificarSiPedidoModificado();
     const carritoStorage = sessionStorage.getItem('carrito');
     this.carrito = carritoStorage ? JSON.parse(carritoStorage) : [];
-    console.log('Carrito cargado:', this.carrito); // Verifica en la consola
     this.calcularTotales();
     if (this.carrito.length > 0) {
       this.mostrarConfirmarPedido = true;
@@ -106,8 +105,11 @@ export class CarritoComponent implements OnInit {
   }
 
   irAPagar() {
+    this.formSubmitted = true;
     if (this.pedidoConfirmado) return;
-
+    if (!this.selectedType) {
+      return;
+    }
     if (this.montoExcedido) return;
 
     const orderType = this.carritoService.getOrderType();
@@ -137,7 +139,11 @@ export class CarritoComponent implements OnInit {
     let mensaje = "📦 *Resumen del Pedido* 📦\n\n";
   
     this.carrito.forEach(item => {
-      mensaje += `*${item.cantidad}x ${item.name}* - $${(item.price * item.cantidad).toLocaleString()}\n`;
+      if (item.category !== 'Arma tu salchi') {
+        mensaje += `*${item.cantidad}x ${item.category} ${item.name}* - $${(item.price * item.cantidad).toLocaleString()}\n`;
+      } else {
+        mensaje += `*${item.cantidad}x ${item.category} * - $${(item.price * item.cantidad).toLocaleString()}\n`;
+      }
   
       if (item.customization?.additions?.length > 0) {
         const adicionesTexto = item.customization.additions.map((add: any) => {
@@ -148,6 +154,13 @@ export class CarritoComponent implements OnInit {
   
       if (item.customization?.exclusions?.length > 0) {
         mensaje += `  🔴 Sin: ${item.customization.exclusions.join(', ')}\n`;
+      }
+
+      if (item.customization?.complements?.length > 0) {
+        const complementosTexto = item.customization.complements.map((add: any) => {
+          return `${add.nombre} (x${add.cantidad})`;
+        }).join(', ');
+        mensaje += ` 🔵 Complementos: ${complementosTexto}\n`;
       }
   
       mensaje += "\n";

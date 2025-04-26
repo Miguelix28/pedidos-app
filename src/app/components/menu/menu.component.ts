@@ -47,7 +47,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   private ngZone = inject(NgZone);
   showSplash: boolean = false; // Variable para controlar la visibilidad del splash screen
   isOpen: boolean = false;
-  canOrder: boolean = false;
+  canOrder: boolean = true;
   showClosedModal: boolean = false;
 
   ngAfterViewInit(): void {
@@ -89,25 +89,32 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showSplash = false; // si ya se mostró, no mostrarlo de nuevo
     }
 
-     combineLatest([this.products$, this.searchTerm$, this.category$])
-     .pipe(
-       map(([products, term, category]) => {
-         const lowerTerm = term.toLowerCase();
-         return products.filter(product =>
-           (!category || category === 'all' || product.category === category) &&
-           (product.name.toLowerCase().includes(lowerTerm) ||
-            product.description.toLowerCase().includes(lowerTerm) ||
-            product.category.toLowerCase().includes(lowerTerm))
-         );
-       })
-     )
-     .subscribe(filtered => this.filteredProducts$.next(filtered));
+    combineLatest([this.products$, this.searchTerm$, this.category$])
+    .pipe(
+      map(([products, term, category]) => {
+        const lowerTerm = term.toLowerCase();
+  
+        // Primero: ordenamos los productos según el orden que quieres
+        const orderedProducts = [...products].sort((a, b) => {
+          const order = { 'Salchipapa': 1, 'Hamburguesa': 2, 'bebida': 3 };
+          return (order[a.category as keyof typeof order] || 99) - (order[b.category as keyof typeof order] || 99);
+        });
+  
+        // Segundo: filtramos
+        return orderedProducts.filter(product =>
+          (!category || category === 'all' || product.category === category) &&
+          (product.name.toLowerCase().includes(lowerTerm) ||
+           product.description.toLowerCase().includes(lowerTerm) ||
+           product.category.toLowerCase().includes(lowerTerm))
+        );
+      })
+    )
+    .subscribe(filtered => this.filteredProducts$.next(filtered));
     this.selectedType = this.carritoService.getOrderType();
     this.loadAllProducts();
     this.loadCategories();
     this.actualizarCantidadCarrito();
     this.actualizarCarrito();
-    console.log('Carrito cargado:', this.carrito); // Verifica en la consola
 
     setTimeout(() => {
       this.setHeaderHeightVariable();
@@ -240,7 +247,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
 
   checkOpeningHours() {
     const currentHour = moment().tz("America/Bogota").hours();
-    this.canOrder = currentHour >= 18 && currentHour < 23;
+    // this.canOrder = currentHour >= 18 && currentHour < 23;
     if (!this.canOrder) {
       setTimeout(() => {
         this.showClosedMessage();

@@ -84,6 +84,17 @@
   }
 }
 
+.selection-buttons.error {
+  border: 2px solid #ff3b30;
+  box-shadow: 0 0 5px rgba(255, 59, 48, 0.3);
+}
+
+.error-message {
+  color: #ff3b30;
+  font-size: 12px;
+  margin-top: 4px;
+  text-align: center;
+}
 
 h3 {
   font-size: 16px;
@@ -123,25 +134,39 @@ h4 {
 .nombre-precio {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 4px;
   width: 100%;
+  gap: 8px;
 }
 
-.nombre-precio h4 {
+.nombre-categoria {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex: 1;
+}
+
+.nombre-categoria h4 {
   margin: 0;
   font-size: 15px;
-  flex: 1;
   color: #3C3C3B;
   font-weight: bold;
+  word-break: break-word; /* Evita que el nombre se desborde */
+}
+
+.nombre-categoria .categoria {
+  font-size: 12px;
+  color: #999;
+  font-weight: 500;
 }
 
 .precio {
   margin: 0;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: right;
-  white-space: nowrap;
+  font-size: 15px;
+  font-weight: bold;
+  color: #3C3C3B;
+  white-space: nowrap; /* Evita que el precio baje de línea */
 }
 
 .cantidad-control {
@@ -322,7 +347,8 @@ h4 {
 }
 
 .adiciones,
-.exclusiones {
+.exclusiones,
+.complementos {
   margin: 4px 0 2px;
   font-weight: 600;
   color: #555;

@@ -49,6 +49,7 @@
     <div *ngFor="let product of filteredProducts$ | async" class="product-card">
       <img [src]="product.image" alt="{{ product.name }}">
       <div class="details">
+        <p>{{ product.category }}</p>
         <h3>{{ product.name }}</h3>
         <p>{{ product.description }}</p>
         <span class="price">${{ product.price | number:'1.0-2' }}</span>
