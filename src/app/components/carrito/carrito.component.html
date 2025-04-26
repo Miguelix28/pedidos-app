@@ -178,7 +178,7 @@
         <p>${{ subtotal | number }}</p>
       </div> -->
       <div class="total">
-        <p><strong>Total tu pedido</strong></p>
+        <p><strong>{{ selectedType === 'delivery' ? 'Total sin domicilio' : 'Total tu pedido' }}</strong></p>
         <p><strong>${{ total | number }}</strong></p>
       </div>
       <div class="mensaje-importante">

@@ -1,4 +1,4 @@
-/* 馃敼 Contenedor del detalle del producto */
+/* 🔸 Contenedor del detalle del producto */
 .producto-detalle-container {
   display: flex;
   flex-direction: column;
@@ -7,20 +7,20 @@
   overflow-y: auto;
   position: relative;
 }
-/* 馃敼 Bot贸n de regreso */
+/* 🔸 Botón de regreso */
 .back-button {
-  align-self: flex-start; /* Alinea el bot贸n de regreso a la izquierda */
+  align-self: flex-start; /* Alinea el botón de regreso a la izquierda */
   margin-bottom: 20px;
 }
 
-/* 馃敼 Imagen del producto */
+/* 🔸 Imagen del producto */
 .producto-imagen img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-/* 馃敼 Informaci贸n del producto */
+/* 🔸 Información del producto */
 .producto-info {
   flex: 1; /* Ocupa el espacio restante */
   display: flex;
@@ -50,7 +50,7 @@
   margin-left: 25px !important;
 }
 
-/* 馃敼 Acorde贸n de personalizaci贸n */
+/* 🔸 Acordeón de personalización */
 .accordion-container {
   margin-top: 20px;
 }
@@ -114,15 +114,24 @@
   justify-content: space-between;
   align-items: center;
   padding: 5px 0;
+  margin: 8px 0;
+  font-size: 14px;
 }
 
-.addition-item {
+.addition-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* .addition-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin: 8px 0;
   font-size: 14px;
-}
+} */
 
 .adicion-contador {
   display: flex;
@@ -135,7 +144,7 @@
 }
 
 .mat-list {
-  max-height: 250px; /* Ajusta el tama帽o seg煤n el dise帽o */
+  max-height: 250px; /* Ajusta el tamaño según el diseño */
   overflow-y: auto; /* Agrega un scroll si hay demasiados productos */
   padding-bottom: 10px; /* Espaciado inferior */
   flex-grow: 1;
@@ -148,7 +157,7 @@
 
 .accordion-container .mat-expansion-panel {
   background-color: #F1EDED; /* Color de fondo para cada panel */
-  margin-bottom: 10px; /* Separaci贸n entre acordeones */
+  margin-bottom: 10px; /* Separación entre acordeones */
   border-radius: 8px; /* Opcional: bordes redondeados */
 }
 
@@ -158,7 +167,7 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Sombra suave opcional */
 }
 
-/* Aseg煤rate de que el t铆tulo tambi茅n tenga el mismo fondo */
+/* Asegúrate de que el título también tenga el mismo fondo */
 .accordion-container .mat-expansion-panel-header {
   background-color: transparent !important;
 }
@@ -197,7 +206,7 @@
 @media (min-width: 768px) and (max-width: 1024px) {
   .producto-imagen img {
     width: 80%; /* Reduce el ancho al 80% */
-    max-width: 500px; /* Establece un ancho m谩ximo */
+    max-width: 500px; /* Establece un ancho máximo */
     margin: 0 auto; /* Centra la imagen */
     display: block; /* Necesario para que margin: 0 auto funcione */
   }
@@ -207,7 +216,7 @@
 @media (min-width: 1025px) {
   .producto-imagen img {
     width: 70%; /* Reduce el ancho al 70% */
-    max-width: 600px; /* Establece un ancho m谩ximo */
+    max-width: 600px; /* Establece un ancho máximo */
     margin: 0 auto; /* Centra la imagen */
     display: block; /* Necesario para que margin: 0 auto funcione */
   }
@@ -243,4 +252,31 @@
   border: none !important;
   box-shadow: none !important;
   cursor: not-allowed !important;
+}
+
+.check-icon {
+  color: #4CAF50;
+  font-size: 20px;
+  margin-right: 8px; /* Añadir espacio entre el icono de verificación y el botón de menos */
+}
+
+/* Ajuste para los contenedores de items */
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+}
+
+.adicion-contador span {
+  font-weight: bold;
+  min-width: 20px; /* Asegura un ancho consistente para el número */
+  text-align: center;
+}
+
+/* Asegúrate de que los iconos tengan un tamaño adecuado */
+.mat-icon {
+  height: 24px;
+  width: 24px;
+  font-size: 24px;
 }

@@ -15,11 +15,9 @@
     <p class="producto-descripcion">{{ producto?.description }}</p>
     <div>
       <strong class="producto-precio">${{ producto?.price | number }}</strong>
-      
     </div>
     
-
-        <!-- Acordeón de Personalización -->
+    <!-- Acordeón de Personalización -->
     <mat-accordion class="accordion-container">
       
       <!-- Acordeón 1: Cantidad de porciones -->
@@ -65,6 +63,7 @@
           <mat-checkbox [(ngModel)]="exclusionesSeleccionadas[exclusion]">
             {{ exclusion }}
           </mat-checkbox>
+          <mat-icon *ngIf="isExclusionSeleccionada(exclusion)" class="check-icon">check_circle</mat-icon>
         </div>
       </mat-expansion-panel>
 
@@ -75,7 +74,10 @@
         </mat-expansion-panel-header>
 
         <div *ngFor="let addition of producto?.customization?.additions" class="addition-item">
-          <span>{{ addition.name }} + <strong>${{ addition.price }}</strong></span>
+          <div class="addition-info">
+            <span>{{ addition.name }} + <strong>${{ addition.price }}</strong></span>
+            <mat-icon *ngIf="isAdicionAgregada(addition.name)" class="check-icon">check_circle</mat-icon>
+          </div>
 
           <div class="adicion-contador">
             <button mat-icon-button color="warn" (click)="disminuirAdicion(addition.name)">
@@ -89,14 +91,17 @@
         </div>
       </mat-expansion-panel>
 
-      <!-- Acordeón 4: Adiciones -->
+      <!-- Acordeón 4: Complementos -->
       <mat-expansion-panel [expanded]="currentStep === 3" *ngIf="producto?.customization?.complements?.length > 0">
         <mat-expansion-panel-header class="expansion-header">
           <mat-panel-title>Complementos</mat-panel-title>
         </mat-expansion-panel-header>
   
         <div *ngFor="let complements of producto?.customization?.complements" class="addition-item">
-          <span>{{ complements.name }} + <strong>${{ complements.price }}</strong></span>
+          <div class="addition-info">
+            <span>{{ complements.name }} + <strong>${{ complements.price }}</strong></span>
+            <mat-icon *ngIf="isComplementoAgregado(complements.name)" class="check-icon">check_circle</mat-icon>
+          </div>
   
           <div class="adicion-contador">
             <button mat-icon-button color="warn" (click)="disminuirComplementosn(complements.name)">
@@ -110,7 +115,6 @@
         </div>
       </mat-expansion-panel>
     </mat-accordion>    
-
 
     <!-- Botones de navegación -->
     <div class="botones-navegacion-container">

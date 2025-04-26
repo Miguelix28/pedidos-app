@@ -167,7 +167,7 @@ export class CarritoComponent implements OnInit {
     });
   
     mensaje += `💰 *Subtotal*: $${this.subtotal.toLocaleString()}\n`;
-    mensaje += `🎉 *Total*: $${this.total.toLocaleString()}\n\n`;
+    mensaje += `🎉 *${this.selectedType === 'delivery' ? 'Total sin domicilio' : 'Total'}*: $${this.total.toLocaleString()}\n\n`;
   
     if (orderType === 'delivery') {
       mensaje += `🛵 *Tipo de Pedido*: Entrega a Domicilio\n`;

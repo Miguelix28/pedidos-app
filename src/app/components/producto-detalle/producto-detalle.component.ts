@@ -77,8 +77,8 @@ export class ProductoDetalleComponent {
     }
   }
 
-   // Método para agregar una adición y contar la cantidad
-   agregarAdicion(addition: string) {
+  // Método para agregar una adición y contar la cantidad
+  agregarAdicion(addition: string) {
     if (!this.adicionesSeleccionadas[addition]) {
       this.adicionesSeleccionadas[addition] = 1;
     } else {
@@ -115,6 +115,21 @@ export class ProductoDetalleComponent {
     }
   }
 
+  // Verifica si un complemento ha sido agregado
+  isComplementoAgregado(complements: string): boolean {
+    return this.complementosSeleccionados[complements] > 0;
+  }
+
+  // Verifica si una exclusión ha sido seleccionada
+  isExclusionSeleccionada(exclusion: string): boolean {
+    return this.exclusionesSeleccionadas[exclusion] === true;
+  }
+
+  // Verifica si una adición ha sido agregada
+  isAdicionAgregada(addition: string): boolean {
+    return this.adicionesSeleccionadas[addition] > 0;
+  }
+
   agregarCantidadPersonas() {
     const categoria = this.producto?.category;
   
@@ -148,8 +163,6 @@ export class ProductoDetalleComponent {
     this.producto.price = this.producto.precioUnitario * this.producto.cantidadPersonas;
   }
   
-
-
   agregarAlCarrito() {
     let carrito = JSON.parse(sessionStorage.getItem('carrito') || '[]');
   
@@ -167,7 +180,7 @@ export class ProductoDetalleComponent {
         };
       });
 
-      const complementos = Object.entries(this.complementosSeleccionados)
+    const complementos = Object.entries(this.complementosSeleccionados)
       .filter(([_, cantidad]) => cantidad > 0)
       .map(([nombre, cantidad]) => {
         const complementsInfo = this.producto.customization.complements.find((a: any) => a.name === nombre);
@@ -229,7 +242,6 @@ export class ProductoDetalleComponent {
     localStorage.removeItem('estadoPedidoActual');
   }
   
-
   getPrecioTotal(): number {
     let precioBase = this.producto?.price || 0;
     let totalAdiciones = 0;
