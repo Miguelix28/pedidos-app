@@ -1,27 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatButtonModule } from '@angular/material/button';
+import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatButtonModule } from '@angular/material/button';
-import { FormsModule } from '@angular/forms';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatSelectModule } from '@angular/material/select';
+import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
-import { LiveAnnouncer } from '@angular/cdk/a11y';
-import { MatChipInputEvent, MatChipEditedEvent } from '@angular/material/chips';
-import { ENTER, COMMA } from '@angular/cdk/keycodes';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 
-interface Product {
-  id?: string;
+// Interfaz para adiciones
+interface Addition {
   name: string;
-  description: string;
   price: number;
-  image: string;
-  category: string;
-  customization: {
-    exclusions: string[];
-    additions: { name: string; price: number }[];
-  };
 }
 
 @Component({
@@ -29,11 +21,12 @@ interface Product {
   standalone: true,
   imports: [
     CommonModule,
+    ReactiveFormsModule,
+    MatDialogModule,
+    MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatButtonModule,
-    MatDialogModule,
-    FormsModule,
+    MatSelectModule,
     MatChipsModule,
     MatIconModule
   ],
@@ -41,87 +34,89 @@ interface Product {
   styleUrls: ['./edit-product-dialog.component.css']
 })
 export class EditProductDialog {
-  isNew: boolean = false;
-  readonly separatorKeysCodes = [ENTER, COMMA] as const; // Teclas para separar chips
-  newExclusion: string = ''; // Nueva exclusión
-  newAddition: string = ''; // Nueva adición
+  productForm: FormGroup;
+  separatorKeysCodes: number[] = [ENTER, COMMA];
+  categories = ['Hamburguesas', 'Pizzas', 'Bebidas', 'Postres', 'Complementos'];
 
   constructor(
+    private fb: FormBuilder,
     public dialogRef: MatDialogRef<EditProductDialog>,
-    @Inject(MAT_DIALOG_DATA) public product: Product,
-    private announcer: LiveAnnouncer // Para anunciar cambios accesibles
+    @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    this.isNew = !product.id;
-
-    // Inicializa las exclusiones y adiciones si no existen
-    if (!product.customization) {
-      this.product.customization = { exclusions: [], additions: [] };
-    }
+    // Inicializa el formulario con los datos del producto o valores por defecto
+    this.productForm = this.fb.group({
+      id: [data?.id || null],
+      name: [data?.name || '', [Validators.required, Validators.minLength(3)]],
+      description: [data?.description || '', Validators.required],
+      price: [data?.price || 0, [Validators.required, Validators.min(0)]],
+      image: [data?.image || '', Validators.required],
+      category: [data?.category || '', Validators.required],
+      customization: this.fb.group({
+        exclusions: [data?.customization?.exclusions || []],
+        additions: this.fb.array(this.buildAdditionsFormArray(data?.customization?.additions || []))
+      })
+    });
   }
 
-  // Método para agregar una exclusión
-  addExclusion(event: MatChipInputEvent): void {
-    const value = (event.value || '').trim();
-
-    // Agregar la exclusión
-    if (value) {
-      this.product.customization.exclusions.push(value);
-    }
-
-    // Limpiar el input
-    event.chipInput!.clear();
+  // Construye un FormArray para las adiciones
+  buildAdditionsFormArray(additions: Addition[]) {
+    return additions.map(addition => this.createAdditionFormGroup(addition));
   }
 
-  // Método para eliminar una exclusión
-  removeExclusion(exclusion: string): void {
-    const index = this.product.customization.exclusions.indexOf(exclusion);
-    if (index >= 0) {
-      this.product.customization.exclusions.splice(index, 1);
-      this.announcer.announce(`Exclusión eliminada: ${exclusion}`);
-    }
+  // Crea un FormGroup para una adición
+  createAdditionFormGroup(addition: Addition = { name: '', price: 0 }) {
+    return this.fb.group({
+      name: [addition.name, Validators.required],
+      price: [addition.price, [Validators.required, Validators.min(0)]]
+    });
   }
 
-  // Método para editar una exclusión
-  editExclusion(exclusion: string, event: MatChipEditedEvent): void {
-    const value = event.value.trim();
-
-    // Eliminar la exclusión si no tiene nombre
-    if (!value) {
-      this.removeExclusion(exclusion);
-      return;
-    }
-
-    // Editar la exclusión
-    const index = this.product.customization.exclusions.indexOf(exclusion);
-    if (index >= 0) {
-      this.product.customization.exclusions[index] = value;
-    }
+  // Getter para el FormArray de adiciones
+  get additionsArray() {
+    return this.productForm.get('customization')?.get('additions') as FormArray;
   }
 
-  // Método para agregar una adición
+  // Getter para las exclusiones
+  get exclusions() {
+    return this.productForm.get('customization')?.get('exclusions')?.value || [];
+  }
+
+  // Agregar una nueva adición al FormArray
   addAddition() {
-    this.product.customization.additions.push({ name: '', price: 0 });
+    this.additionsArray.push(this.createAdditionFormGroup());
   }
 
-  // Método para eliminar una adición
+  // Eliminar una adición del FormArray
   removeAddition(index: number) {
-    const removed = this.product.customization.additions.splice(index, 1)[0];
-    this.announcer.announce(`Adición eliminada: ${removed?.name}`);
+    this.additionsArray.removeAt(index);
   }
 
-  updateAdditionName(index: number, newName: string) {
-    this.product.customization.additions[index].name = newName;
-  }
-  
-  updateAdditionPrice(index: number, newPrice: number) {
-    this.product.customization.additions[index].price = newPrice;
+  // Agregar una exclusión
+  addExclusion(event: MatChipInputEvent) {
+    const value = (event.value || '').trim();
+    if (value) {
+      const currentExclusions = [...this.exclusions];
+      currentExclusions.push(value);
+      this.productForm.get('customization')?.get('exclusions')?.setValue(currentExclusions);
+      event.chipInput!.clear();
+    }
   }
 
-  onCancel(): void {
+  // Eliminar una exclusión
+  removeExclusion(exclusion: string) {
+    const currentExclusions = this.exclusions.filter((e: string) => e !== exclusion);
+    this.productForm.get('customization')?.get('exclusions')?.setValue(currentExclusions);
+  }
+
+  // Guardar los cambios
+  onSave() {
+    if (this.productForm.valid) {
+      this.dialogRef.close(this.productForm.value);
+    }
+  }
+
+  // Cancelar
+  onCancel() {
     this.dialogRef.close();
-  }
-
-  onSave(): void {
-    this.dialogRef.close(this.product);
   }
 }

@@ -68,9 +68,9 @@
   <!-- Modal de horario cerrado -->
   <div *ngIf="showClosedModal" class="modal-overlay" (click)="closeModal()">
     <div class="closed-message" (click)="$event.stopPropagation()">
-      <h3>Horario cerrado</h3>
-      <p>Por el momento no hay servicio. Nuestro horario de atención es de 6:00 PM a 11:00 PM.</p>
-      <button (click)="closeModal()">Entendido</button>
+      <h3>Cerrado</h3>
+      <p>Por el momento no hay servicio.</p>
+      <button (click)="closeModal()">Aceptar</button>
     </div>
   </div>
 </div>

@@ -1,50 +1,87 @@
-/* Estilo para el contenido del diálogo */
-.dialog-content {
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Espacio entre los campos */
-    padding: 16px 0;
-  }
-  
-  /* Estilo para los campos del formulario */
-  mat-form-field {
-    width: 100%; /* Ocupa todo el ancho disponible */
-  }
-  
-  /* Estilo para los mat-chip */
-  mat-chip {
-    margin: 2px;
-  }
-  
-  /* Estilo para los botones del diálogo */
-  mat-dialog-actions {
-    padding: 16px 0;
-    justify-content: flex-end; /* Alinea los botones a la derecha */
-  }
-  
-  /* Estilo para el botón de guardar */
-  button[color="primary"] {
-    background-color: #3f51b5; /* Color primario de Angular Material */
-    color: white;
-  }
-  
-  /* Estilo para el botón de cancelar */
-  button[mat-button] {
-    color: #3f51b5; /* Color primario de Angular Material */
-  }
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
 
-  .adiciones-container {
-    margin-top: 1rem;
-  }
-  
-  .adicion-item {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  
-  .adicion-nombre, .adicion-precio {
-    flex: 1;
-  }
-  
+.full-width {
+  grid-column: 1 / -1;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.customization-section {
+  margin-top: 24px;
+}
+
+.customization-section h3 {
+  margin-bottom: 16px;
+  color: #3f51b5;
+  font-weight: 500;
+}
+
+.additions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.additions-header h4 {
+  margin: 0;
+  color: #666;
+}
+
+.additions-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.addition-item {
+  display: grid;
+  grid-template-columns: 2fr 1fr auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.exclusions-section, 
+.additions-section {
+  margin-top: 16px;
+}
+
+mat-chip-grid {
+  margin-bottom: 16px;
+}
+
+textarea {
+  resize: vertical;
+}
+
+:host ::ng-deep .mat-mdc-dialog-container {
+  padding: 0;
+}
+
+h2.mat-dialog-title {
+  background-color: #3f51b5;
+  color: white;
+  padding: 16px;
+  margin: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.mat-mdc-dialog-content {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 8px 24px;
+  border-top: 1px solid #eee;
+}

@@ -367,6 +367,12 @@ ul {
   flex-direction: column;
 }
 
+.basic-input{
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
 .direccion-input h3 {
   font-size: 18px;
   font-weight: 600;

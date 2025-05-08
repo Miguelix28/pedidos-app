@@ -13,6 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { SplashScreenComponent } from "../splash-screen/splash-screen.component";
 import moment from 'moment-timezone';
+import { HorarioService } from '../../services/horario.service';
 
 @Component({
   selector: 'app-menu',
@@ -30,6 +31,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   private firebaseService = inject(FirebaseService);
   private productoService = inject(ProductoService);
   private carritoService = inject(CarritoService);
+  private horarioService = inject(HorarioService);
   private router = inject(Router);
   cantidadCarrito: any;
   carrito: any[] = [];
@@ -49,6 +51,8 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   isOpen: boolean = false;
   canOrder: boolean = true;
   showClosedModal: boolean = false;
+  estaAbierto: boolean = false;
+  mensajeHorario: string = '';
 
   ngAfterViewInit(): void {
     // this.adjustProductsContainerMargin();
@@ -76,7 +80,24 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
-  this.checkOpeningHours();
+  // Verificar si el restaurante está abierto
+  // Verificar si el restaurante está abierto
+  this.horarioService.checkEstaAbierto().subscribe({
+    next: (estaAbierto) => {
+      this.canOrder = estaAbierto;
+      
+      if (!estaAbierto) {
+        setTimeout(() => {
+          this.showClosedModal = true;
+        }, 500);
+      }
+    },
+    error: (error) => {
+      console.error('Error al verificar horario:', error);
+      // En caso de error, permitimos ordenar para no bloquear la funcionalidad
+      this.canOrder = true;
+    }
+  });
   const splashYaMostrado = localStorage.getItem('splashYaMostrado');
     if (!splashYaMostrado) {
       this.showSplash = true;
@@ -96,7 +117,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   
         // Primero: ordenamos los productos según el orden que quieres
         const orderedProducts = [...products].sort((a, b) => {
-          const order = { 'Salchipapa': 1, 'Hamburguesa': 2, 'bebida': 3 };
+          const order = { 'Salchipapa': 1, 'Arma tu salchi':2 ,'Hamburguesa': 3,'bebida': 4 };
           return (order[a.category as keyof typeof order] || 99) - (order[b.category as keyof typeof order] || 99);
         });
   
@@ -263,27 +284,4 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showClosedModal = false;
   }
 
-  // private handleScroll(_event: any) {
-  //   // Obtener el contenedor de categorías
-  //   const categoriesContainer = this.headerMenu.nativeElement.querySelector('.categories-container');
-    
-  //   // Ocultar categorías cuando comienza el desplazamiento
-  //   if (!this.isScrolling) {
-  //     this.isScrolling = true;
-  //     categoriesContainer.classList.add('hidden');
-  //   }
-    
-  //   // Limpiar el timeout anterior
-  //   if (this.scrollTimer) {
-  //     clearTimeout(this.scrollTimer);
-  //   }
-    
-  //   // Establecer nuevo timeout - las categorías reaparecerán 300ms después de que se detenga el desplazamiento
-  //   this.scrollTimer = setTimeout(() => {
-  //     this.ngZone.run(() => {
-  //       this.isScrolling = false;
-  //       categoriesContainer.classList.remove('hidden');
-  //     });
-  //   }, 300);
-  // }
 }

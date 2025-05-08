@@ -29,6 +29,11 @@ export const routes: Routes = [
     canActivate: [AdminGuard]  // Aplica el guard aquí
   },
   { 
+    path: 'horarios', 
+    loadComponent: () => import('./components/horario/horario.component').then(m => m.HorarioComponent),
+    canActivate: [AdminGuard]  // Aplica el guard aquí
+  },
+  { 
     path: 'login', 
     loadComponent: () => import('./components/login/login.component').then(m => m.LoginComponent),
   },

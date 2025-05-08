@@ -36,6 +36,9 @@ export class CarritoComponent implements OnInit {
   montoDisplay: string = '';
   montoValido: boolean = true;
   montoExcedido: boolean = false;
+  nombreCliente: string = '';
+  numeroCelular: string = '';
+  showName: boolean = false;
   
   constructor(private router: Router, private carritoService: CarritoService) {
   }
@@ -104,6 +107,24 @@ export class CarritoComponent implements OnInit {
     this.calcularTotales();
   }
 
+// Solo permite letras y espacios en el nombre (en tiempo real)
+onNombreInput(event: any) {
+  let value = event.target.value;
+  // Permite letras, tildes, ñ y espacios
+  value = value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]/g, '');
+  event.target.value = value; // Actualiza el input en móviles
+  this.nombreCliente = value;
+}
+
+filtrarCelular(event: Event) {
+  const input = event.target as HTMLInputElement;
+  input.value = input.value.replace(/\D/g, '').slice(0, 10);
+  this.numeroCelular = input.value;
+}
+
+numeroCelularValido(): boolean {
+  return /^\d{10}$/.test(this.numeroCelular?.toString() || '');
+}
   irAPagar() {
     this.formSubmitted = true;
     if (this.pedidoConfirmado) return;
@@ -111,6 +132,13 @@ export class CarritoComponent implements OnInit {
       return;
     }
     if (this.montoExcedido) return;
+    if (!this.nombreCliente || this.nombreCliente.trim().length === 0) {
+      return;
+    }
+    
+    if (!this.numeroCelular || this.numeroCelular.toString().length !== 10 || !/^\d{10}$/.test(this.numeroCelular.toString())) {
+      return;
+    }
 
     const orderType = this.carritoService.getOrderType();
   
@@ -186,6 +214,14 @@ export class CarritoComponent implements OnInit {
     if (this.mensajeAdicional && this.mensajeAdicional.trim()) {
       mensaje += `✉️ *Observaciones del pedido*: ${this.mensajeAdicional}\n`;
     }
+
+    if (this.nombreCliente) {
+      mensaje += `🙍 *Cliente*: ${this.nombreCliente}\n`;
+    }
+    
+    if (this.numeroCelular) {
+      mensaje += `📞 *Teléfono*: ${this.numeroCelular}\n`;
+    }
   
     mensaje += "\n¡Gracias por tu compra! 🙌";
   
@@ -205,6 +241,7 @@ export class CarritoComponent implements OnInit {
 
   setOrderType(type: string) {
     this.selectedType = type;
+    this.showName = true;
     if (type === 'delivery') {
       this.showDireccion = true;
       this.getUbicacion(); 

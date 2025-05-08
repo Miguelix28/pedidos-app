@@ -39,6 +39,13 @@ export class ProductoDetalleComponent {
   ) {}
 
   ngOnInit() {
+    // Asegura que el scroll funcione correctamente al cargar la página
+  setTimeout(() => {
+    const container = document.querySelector('.producto-detalle-container');
+    if (container) {
+      container.scrollTop = 0;
+    }
+  }, 200);
     const productId = this.route.snapshot.paramMap.get('id');
     if (productId === 'Arma-tu-Salchi!') {
       this.titleAddittions = 'Personaliza tu salchi con adiciones';
@@ -264,15 +271,19 @@ export class ProductoDetalleComponent {
     return (precioBase + totalAdiciones + totalComplementos) * this.cantidad; // 👈 Adiciones también se multiplican
   }
 
-  nextStep() {
-    if (this.currentStep < 3) { // 2 porque tienes 3 acordeones (0,1,2)
-      this.currentStep++;
-    }
-  }
-  
-  previousStep() {
-    if (this.currentStep > 0) {
-      this.currentStep--;
+  scrollToStep() {
+    // Encuentra todos los paneles de expansión
+    const panels = document.querySelectorAll('mat-expansion-panel');
+    
+    // Si hay un panel correspondiente al paso actual
+    if (panels[this.currentStep]) {
+      // Espera un momento para que se abra el panel antes de hacer scroll
+      setTimeout(() => {
+        panels[this.currentStep].scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start'
+        });
+      }, 100);
     }
   }
 }

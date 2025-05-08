@@ -4,9 +4,12 @@
   flex-direction: column;
   padding: 0;
   height: 100vh;
-  overflow-y: auto;
+  overflow-y: auto;  /* Este es el único lugar donde permitimos scroll */
   position: relative;
+  padding-bottom: 80px; /* Añadimos padding en la parte inferior para el espacio de los botones fijos */
+  -webkit-overflow-scrolling: touch; /* Mejor soporte para scroll en iOS */
 }
+
 /* 🔸 Botón de regreso */
 .back-button {
   align-self: flex-start; /* Alinea el botón de regreso a la izquierda */
@@ -27,6 +30,7 @@
   flex-direction: column;
   gap: 10px;
   padding: 10px;
+  overflow-y: visible; /* Aseguramos que no tenga scroll propio */
 }
 
 .producto-categoria {
@@ -53,6 +57,8 @@
 /* 🔸 Acordeón de personalización */
 .accordion-container {
   margin-top: 20px;
+  overflow: visible; /* Eliminamos posible scroll aquí */
+  width: 100%; /* Aseguramos que ocupe todo el ancho disponible */
 }
 
 .checkbox-item {
@@ -67,12 +73,17 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 20px;
-  margin-top: 20px;
   border-top: 1px solid #eee;
-  margin-bottom: 10px;
+  background-color: white;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  height: 64px; /* Añadido: define una altura fija para el contenedor */
 }
 
-/* Contenedor de cantidad */
 .cantidad-container {
   display: flex;
   align-items: center;
@@ -81,6 +92,7 @@
   padding: 8px 12px;
   border-radius: 25px;
   border: 1px solid #F8C64B;
+  height: 40px; /* Añadido: define una altura específica */
 }
 
 /* Botón de agregar al carrito */
@@ -88,10 +100,12 @@
   flex: 1;
   margin-left: 10px;
   background-color: #3C3C3B !important;
-  height: 100%; /* Matches the altura del contenedor de cantidad */
+  height: 58px !important;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 25px !important;
+  color: white !important; /* Aseguramos que el texto sea visible */
 }
 
 /* Estilos para los botones dentro del contenedor de cantidad */
@@ -125,14 +139,6 @@
   justify-content: space-between;
 }
 
-/* .addition-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 8px 0;
-  font-size: 14px;
-} */
-
 .adicion-contador {
   display: flex;
   align-items: center;
@@ -143,12 +149,11 @@
   font-weight: bold;
 }
 
+/* Eliminamos la configuración de scroll de la lista */
 .mat-list {
-  max-height: 250px; /* Ajusta el tamaño según el diseño */
-  overflow-y: auto; /* Agrega un scroll si hay demasiados productos */
+  max-height: 250px; 
   padding-bottom: 10px; /* Espaciado inferior */
   flex-grow: 1;
-  overflow-y: auto;
 }
 
 .accordion-container {
@@ -175,6 +180,9 @@
 ::ng-deep .accordion-container .mat-expansion-panel-body {
   background-color: #FFFFFF !important;
   padding: 16px !important;
+  max-height: none !important; /* Aseguramos que no tenga límite de altura */
+  overflow: visible !important; /* Quitamos posible scroll */
+  touch-action: pan-y !important; /* Permitimos el scroll vertical táctil */
 }
 
 ::ng-deep .accordion-container .mat-expansion-panel {
@@ -279,4 +287,9 @@
   height: 24px;
   width: 24px;
   font-size: 24px;
+}
+
+::ng-deep .mat-expansion-panel-body {
+  overflow: visible !important; /* Eliminamos el overflow interno */
+  max-height: none !important;   /* Quitamos límite de altura */
 }

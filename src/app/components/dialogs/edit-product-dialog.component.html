@@ -1,87 +1,107 @@
-<h2 mat-dialog-title>{{ isNew ? 'Nuevo Producto' : 'Editar Producto' }}</h2>
-<mat-dialog-content class="dialog-content">
-  <form>
-    <!-- Nombre -->
-    <mat-form-field appearance="outline">
-      <mat-label>Nombre</mat-label>
-      <input matInput placeholder="Nombre del producto" [(ngModel)]="product.name" name="name" required>
-    </mat-form-field>
+<h2 mat-dialog-title>{{ data.id ? 'Editar' : 'Agregar' }} Producto</h2>
 
-    <!-- Descripción -->
-    <mat-form-field appearance="outline">
-      <mat-label>Descripción</mat-label>
-      <textarea matInput placeholder="Descripción del producto" [(ngModel)]="product.description" name="description" required></textarea>
-    </mat-form-field>
+<form [formGroup]="productForm" (ngSubmit)="onSave()">
+  <div mat-dialog-content>
+    <div class="form-grid">
+      <!-- Nombre del producto -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nombre del producto</mat-label>
+        <input matInput formControlName="name" placeholder="Ej. Hamburguesa Especial">
+        <mat-error *ngIf="productForm.get('name')?.hasError('required')">El nombre es obligatorio</mat-error>
+        <mat-error *ngIf="productForm.get('name')?.hasError('minlength')">Mínimo 3 caracteres</mat-error>
+      </mat-form-field>
 
-    <!-- Precio -->
-    <mat-form-field appearance="outline">
-      <mat-label>Precio</mat-label>
-      <input matInput type="number" placeholder="Precio del producto" [(ngModel)]="product.price" name="price" required>
-    </mat-form-field>
+      <!-- Categoría -->
+      <mat-form-field appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-select formControlName="category">
+          <mat-option *ngFor="let category of categories" [value]="category">
+            {{ category }}
+          </mat-option>
+        </mat-select>
+        <mat-error *ngIf="productForm.get('category')?.hasError('required')">La categoría es obligatoria</mat-error>
+      </mat-form-field>
 
-    <!-- Imagen -->
-    <mat-form-field appearance="outline">
-      <mat-label>Imagen (URL)</mat-label>
-      <input matInput placeholder="URL de la imagen" [(ngModel)]="product.image" name="image" required>
-    </mat-form-field>
+      <!-- Precio -->
+      <mat-form-field appearance="outline">
+        <mat-label>Precio ($)</mat-label>
+        <input matInput type="number" formControlName="price" min="0" step="0.01">
+        <mat-error *ngIf="productForm.get('price')?.hasError('required')">El precio es obligatorio</mat-error>
+        <mat-error *ngIf="productForm.get('price')?.hasError('min')">El precio debe ser mayor a 0</mat-error>
+      </mat-form-field>
 
-    <!-- Categoría -->
-    <mat-form-field appearance="outline">
-      <mat-label>Categoría</mat-label>
-      <input matInput placeholder="Categoría del producto" [(ngModel)]="product.category" name="category" required>
-    </mat-form-field>
+      <!-- URL de la imagen -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>URL de imagen</mat-label>
+        <input matInput formControlName="image" placeholder="https://ejemplo.com/imagen.jpg">
+        <mat-error *ngIf="productForm.get('image')?.hasError('required')">La imagen es obligatoria</mat-error>
+      </mat-form-field>
 
-    <!-- Exclusiones -->
-    <mat-form-field appearance="outline">
-      <mat-label>Exclusiones</mat-label>
-      <mat-chip-grid #exclusionesGrid>
-        <mat-chip-row 
-          *ngFor="let exclusion of product.customization.exclusions" 
-          (removed)="removeExclusion(exclusion)"
-          (edited)="editExclusion(exclusion, $event)"
-        >
-          {{ exclusion }}
-          <button matChipRemove>
-            <mat-icon>cancel</mat-icon>
-          </button>
-        </mat-chip-row>
-        <input 
-          matInput 
-          placeholder="Agregar exclusión" 
-          [matChipInputFor]="exclusionesGrid" 
-          [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-          (matChipInputTokenEnd)="addExclusion($event)" 
-        />
-      </mat-chip-grid>
-    </mat-form-field>
+      <!-- Descripción -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descripción</mat-label>
+        <textarea matInput formControlName="description" rows="3" placeholder="Escribe una descripción detallada del producto..."></textarea>
+        <mat-error *ngIf="productForm.get('description')?.hasError('required')">La descripción es obligatoria</mat-error>
+      </mat-form-field>
+    </div>
 
-    <!-- Adiciones -->
-    <div class="adiciones-container">
-      <h3>Adiciones</h3>
-
-      <!-- Lista de adiciones -->
-      <div *ngFor="let addition of product.customization.additions; let i = index" class="adicion-item">
-        <mat-form-field appearance="fill" class="adicion-nombre">
-          <mat-label>Nombre</mat-label>
-          <input matInput [(ngModel)]="addition.name" name="additionName{{i}}" required>
+    <!-- Sección de personalización -->
+    <div formGroupName="customization" class="customization-section">
+      <h3>Personalización</h3>
+      
+      <!-- Exclusiones (Chips) -->
+      <div class="exclusions-section">
+        <mat-label>Exclusiones (ingredientes que se pueden quitar)</mat-label>
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-chip-grid #chipGrid aria-label="Exclusiones">
+            <mat-chip-row *ngFor="let exclusion of exclusions" (removed)="removeExclusion(exclusion)">
+              {{exclusion}}
+              <button matChipRemove>
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </mat-chip-row>
+            <input placeholder="Nueva exclusión..."
+                   [matChipInputFor]="chipGrid"
+                   [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+                   (matChipInputTokenEnd)="addExclusion($event)">
+          </mat-chip-grid>
         </mat-form-field>
-
-        <mat-form-field appearance="fill" class="adicion-precio">
-          <mat-label>Precio</mat-label>
-          <input matInput type="number" [(ngModel)]="addition.price" name="additionPrice{{i}}" required>
-        </mat-form-field>
-
-        <button mat-icon-button color="warn" (click)="removeAddition(i)">
-          <mat-icon>delete</mat-icon>
-        </button>
       </div>
 
-      <!-- Botón para añadir nueva adición -->
-      <button mat-button color="accent" (click)="addAddition()">➕ Añadir adición</button>
+      <!-- Adiciones (FormArray) -->
+      <div class="additions-section">
+        <div class="additions-header">
+          <h4>Adiciones (ingredientes extra)</h4>
+          <button type="button" mat-mini-fab color="primary" (click)="addAddition()">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+
+        <div formArrayName="additions" class="additions-container">
+          <div *ngFor="let addition of additionsArray.controls; let i = index" [formGroupName]="i" class="addition-item">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="name" placeholder="Ej. Queso extra">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Precio adicional</mat-label>
+              <input matInput type="number" formControlName="price" min="0" step="0.01">
+            </mat-form-field>
+
+            <button type="button" mat-icon-button color="warn" (click)="removeAddition(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
-  </form>
-</mat-dialog-content>
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">Cancelar</button>
-  <button mat-raised-button color="primary" (click)="onSave()">Guardar</button>
-</mat-dialog-actions>
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button type="button" mat-button (click)="onCancel()">Cancelar</button>
+    <button type="submit" mat-raised-button color="primary" [disabled]="productForm.invalid">
+      {{ data.id ? 'Actualizar' : 'Guardar' }}
+    </button>
+  </div>
+</form>

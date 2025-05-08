@@ -9,89 +9,6 @@
       <mat-icon>close</mat-icon>
     </button>
   </div>
-
-  <!-- Tabs de selección de tipo de orden -->
-<div class="selection-buttons" [class.error]="formSubmitted && !selectedType">
-  <button
-    [class.active]="selectedType === 'takeaway'"
-    (click)="setOrderType('takeaway')"
-  >
-    <span>Recoger</span>
-  </button>
-  
-  <button
-    [class.active]="selectedType === 'restaurant'"
-    (click)="setOrderType('restaurant')"
-  >
-    <span>Restaurante</span>
-  </button>
-  
-  <button
-    [class.active]="selectedType === 'delivery'"
-    (click)="setOrderType('delivery')"
-  >
-    <span>Domicilio</span>
-  </button>
-</div>
-
-<div *ngIf="formSubmitted && !selectedType" class="error-message">
-  Debes seleccionar el tipo de pedido
-</div>
-
-  <div *ngIf="showDireccion" class="direccion-input">
-    <h3><label for="direccion">Dirección de entrega</label></h3>
-    
-    <input
-      id="direccion"
-      type="text"
-      [(ngModel)]="direccion"
-      placeholder="Ej: Calle 80N # 99 - 30 B/La Paz"
-      [ngClass]="{'invalid-input': direccion === '' && formSubmitted}"
-      (blur)="validateDireccion()"
-      #direccionInput
-    />
-        
-    <div *ngIf="direccion === '' && formSubmitted" class="error-message">
-      Ingresa la dirección de entrega o selecciona
-    </div>
-
-    <!-- Método de pago -->
-    <div class="form-group">
-      <h3><label for="metodoPago">Método de pago</label></h3>
-      <div class="input-container select-container">
-        <select id="metodoPago" [(ngModel)]="metodoPago" class="select-input">
-          <option class="option" value="efectivo">Efectivo</option>
-          <option class="option" value="transferencia">Transferencia</option>
-        </select>
-        <div class="select-arrow">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
-        </div>
-      </div>
-    </div>  
-    <div *ngIf="metodoPago !== 'transferencia'">
-      <h3><label for="monto">¿Con cuánto cancelas?</label></h3>
-      
-      <input
-        id="monto"
-        type="text"
-        [(ngModel)]="montoDisplay"
-        class="monto-field"
-        placeholder="Ej: $50.000"
-        [ngClass]="{'invalid-input': !montoValido && formSubmitted}"
-        (input)="formatearMonto($event)"
-        (blur)="validarMonto()"
-        #montoInput
-      />
-      <div *ngIf="montoExcedido" class="advertencia-monto">
-        El monto máximo permitido es $10.000.000
-      </div> 
-      <div *ngIf="!montoValido && formSubmitted" class="error-message">
-        Ingresa un monto válido
-      </div>
-    </div>
-  </div>
   
   <ng-container *ngIf="carrito.length > 0; else carritoVacio">
     <!-- Product items -->
@@ -170,6 +87,128 @@
          </mat-expansion-panel>
        </mat-accordion>
      </div>
+
+    <div class="total">
+    <p><strong>Selecciona el tipo de pedido</strong></p>
+    </div>
+      <!-- Tabs de selección de tipo de orden -->
+    <div class="selection-buttons" [class.error]="formSubmitted && !selectedType">
+      <button
+        [class.active]="selectedType === 'takeaway'"
+        (click)="setOrderType('takeaway')"
+      >
+        <span>Recoger</span>
+      </button>
+      
+      <button
+        [class.active]="selectedType === 'restaurant'"
+        (click)="setOrderType('restaurant')"
+      >
+        <span>Restaurante</span>
+      </button>
+      
+      <button
+        [class.active]="selectedType === 'delivery'"
+        (click)="setOrderType('delivery')"
+      >
+        <span>Domicilio</span>
+      </button>
+    </div>
+
+    <div *ngIf="formSubmitted && !selectedType" class="error-message">
+      Debes seleccionar el tipo de pedido
+    </div>
+
+    <div *ngIf="showDireccion" class="direccion-input">
+      <h3><label for="direccion">Dirección de entrega</label></h3>
+      
+      <input
+        id="direccion"
+        type="text"
+        [(ngModel)]="direccion"
+        placeholder="Ej: Calle 80N # 99 - 30 B/La Paz"
+        [ngClass]="{'invalid-input': direccion === '' && formSubmitted}"
+        (blur)="validateDireccion()"
+        #direccionInput
+      />
+          
+      <div *ngIf="direccion === '' && formSubmitted" class="error-message">
+        Ingresa la dirección de entrega o selecciona
+      </div>
+  
+      <!-- Método de pago -->
+      <div class="form-group">
+        <h3><label for="metodoPago">Método de pago</label></h3>
+        <div class="input-container select-container">
+          <select id="metodoPago" [(ngModel)]="metodoPago" class="select-input">
+            <option class="option" value="efectivo">Efectivo</option>
+            <option class="option" value="transferencia">Transferencia</option>
+          </select>
+          <div class="select-arrow">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>  
+      <div *ngIf="metodoPago !== 'transferencia'">
+        <h3><label for="monto">¿Con cuánto cancelas?</label></h3>
+        
+        <input
+          id="monto"
+          type="text"
+          [(ngModel)]="montoDisplay"
+          class="monto-field"
+          placeholder="Ej: $50.000"
+          [ngClass]="{'invalid-input': !montoValido && formSubmitted}"
+          (input)="formatearMonto($event)"
+          (blur)="validarMonto()"
+          #montoInput
+        />
+        <div *ngIf="montoExcedido" class="advertencia-monto">
+          El monto máximo permitido es $10.000.000
+        </div> 
+        <div *ngIf="!montoValido && formSubmitted" class="error-message">
+          Ingresa un monto válido
+        </div>
+      </div>
+    </div>
+    <div *ngIf="showName" class="basic-input">
+      <div class="direccion-input">
+        <h3><label >Ingresa nombre</label></h3>
+        <input
+          type="text"
+          [(ngModel)]="nombreCliente"
+          placeholder="Ingresa tu nombre"
+          (input)="onNombreInput($event)"
+          [ngClass]="{'invalid-input': (!nombreCliente || nombreCliente.trim() === '') && formSubmitted}"
+          autocomplete="off"
+          autocapitalize="words"
+          spellcheck="false"
+          maxlength="30"
+        />
+        <div *ngIf="(!nombreCliente || nombreCliente.trim() === '') && formSubmitted" class="error-message">
+          Ingresa un nombre válido
+        </div>
+      </div>
+      <div class="direccion-input">
+        <h3><label>Número de celular</label></h3>
+        <input
+          type="tel"
+          [(ngModel)]="numeroCelular"
+          class="monto-field"
+          inputmode="numeric"
+          autocomplete="tel"
+          maxlength="10"
+          placeholder="Ingresa tu número de celular"
+          [ngClass]="{'invalid-input': (!numeroCelularValido() && formSubmitted)}"
+          (input)="filtrarCelular($event)"
+        />
+        <div *ngIf="!numeroCelularValido() && formSubmitted" class="error-message">
+          El número debe tener 10 dígitos.
+        </div>
+      </div>
+    </div>
     
     <!-- Order summary -->
     <div class="order-summary">

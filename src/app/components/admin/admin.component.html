@@ -1,62 +1,89 @@
 <div class="admin-container">
+  <!-- Barra superior con título y botón de cierre de sesión -->
   <div class="top-bar">
-    <button mat-stroked-button color="warn" (click)="logout()">Cerrar sesión</button>
+    <h1>🛍️ Gestión de Productos</h1>
+    <button mat-stroked-button color="warn" (click)="logout()">
+      <mat-icon>logout</mat-icon> Cerrar sesión
+    </button>
   </div>
-  <h1>🛍️ Gestión de Productos</h1>
-  <!-- Botón para agregar nuevo producto -->
-  <button mat-raised-button color="primary" (click)="openDialog()">Nuevo Producto</button>
 
-  <!-- Tabla responsiva -->
-  <div class="table-responsive">
-    <table mat-table [dataSource]="dataSource" class="mat-elevation-z8">
+  <!-- Barra de acciones -->
+  <div class="action-bar">
+    <button mat-raised-button color="primary" (click)="openDialog()">
+      <mat-icon>add_circle</mat-icon> Nuevo Producto
+    </button>
+    <button mat-raised-button color="primary" (click)="goHorarios()">
+      <mat-icon>calendar_month</mat-icon> Horarios
+    </button>
 
-      <!-- Nombre -->
-      <ng-container matColumnDef="name">
-        <th mat-header-cell *matHeaderCellDef>📝 Nombre</th>
-        <td mat-cell *matCellDef="let product">{{ product.name }}</td>
-      </ng-container>
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar productos</mat-label>
+      <input matInput [formControl]="searchControl" placeholder="Nombre, categoría...">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+  </div>
 
-      <!-- Descripción -->
-      <ng-container matColumnDef="description">
-        <th mat-header-cell *matHeaderCellDef>📃 Descripción</th>
-        <td mat-cell *matCellDef="let product">{{ product.description }}</td>
-      </ng-container>
+  <!-- Tabla responsiva con cargador -->
+  <div class="table-container mat-elevation-z8">
+    <div *ngIf="isLoading" class="loading-spinner">
+      <mat-icon class="spin">refresh</mat-icon>
+      <p>Cargando productos...</p>
+    </div>
 
-      <!-- Precio -->
-      <ng-container matColumnDef="price">
-        <th mat-header-cell *matHeaderCellDef>💰 Precio</th>
+    <table mat-table [dataSource]="dataSource" matSort>
+      <!-- Imagen -->
+      <ng-container matColumnDef="image">
+        <th mat-header-cell *matHeaderCellDef>Imagen</th>
         <td mat-cell *matCellDef="let product">
-          <strong>${{ product.price }}</strong>
+          <div class="product-img-container" [matTooltip]="product.name">
+            <img [src]="product.image" alt="Producto" class="product-img"/>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Nombre + Descripción -->
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Producto</th>
+        <td mat-cell *matCellDef="let product">
+          <div class="product-info">
+            <h3 class="product-name">{{ product.name }}</h3>
+            <p class="product-description">{{ product.description }}</p>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="price">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Precio</th>
+        <td mat-cell *matCellDef="let product">
+          <span class="price-tag">
+            {{ product.price.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}
+          </span>
         </td>
       </ng-container>
 
       <!-- Categoría -->
       <ng-container matColumnDef="category">
-        <th mat-header-cell *matHeaderCellDef>📂 Categoría</th>
-        <td mat-cell *matCellDef="let product">{{ product.category }}</td>
-      </ng-container>
-
-      <!-- Personalización (Exclusiones) -->
-      <ng-container matColumnDef="exclusions">
-        <th mat-header-cell *matHeaderCellDef>🚫 Exclusiones</th>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Categoría</th>
         <td mat-cell *matCellDef="let product">
-          {{ product.customization?.exclusions?.join(', ') || 'N/A' }}
+          <span class="category-badge">{{ product.category }}</span>
         </td>
       </ng-container>
 
-      <!-- Personalización (Adiciones) -->
-      <ng-container matColumnDef="additions">
-        <th mat-header-cell *matHeaderCellDef>➕ Adiciones</th>
+      <!-- Personalización (Exclusiones y Adiciones) -->
+      <ng-container matColumnDef="customization">
+        <th mat-header-cell *matHeaderCellDef>Personalización</th>
         <td mat-cell *matCellDef="let product">
-          {{ formatAdditions(product.customization?.additions) }}
-        </td>
-      </ng-container>
-
-      <!-- Imagen -->
-      <ng-container matColumnDef="image">
-        <th mat-header-cell *matHeaderCellDef>🖼️ Imagen</th>
-        <td mat-cell *matCellDef="let product">
-          <img [src]="product.image" alt="Producto" class="product-img"/>
+          <div class="customization-info">
+            <div *ngIf="product.customization?.exclusions?.length" class="exclusions">
+              <strong>🚫 Exclusiones:</strong> {{ product.customization.exclusions.join(', ') }}
+            </div>
+            <div *ngIf="product.customization?.additions?.length" class="additions">
+              <strong>➕ Adiciones:</strong> {{ formatAdditions(product.customization.additions) }}
+            </div>
+            <div *ngIf="!product.customization?.exclusions?.length && !product.customization?.additions?.length">
+              No personalizable
+            </div>
+          </div>
         </td>
       </ng-container>
 
@@ -64,18 +91,32 @@
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let product">
-          <button mat-icon-button color="accent" (click)="openDialog(product)">
-            <mat-icon>edit</mat-icon>
-          </button>
-          <button mat-icon-button color="warn" (click)="deleteProduct(product.id)">
-            <mat-icon>delete</mat-icon>
-          </button>
+          <div class="action-buttons">
+            <button mat-mini-fab color="primary" (click)="openDialog(product)" matTooltip="Editar producto">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-mini-fab color="warn" (click)="deleteProduct(product.id)" matTooltip="Eliminar producto">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
         </td>
       </ng-container>
 
-      <!-- Definición de las columnas a mostrar -->
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      
+      <!-- Fila para cuando no hay datos -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
+          <div class="no-data-message">
+            <mat-icon>sentiment_dissatisfied</mat-icon>
+            <p>No se encontraron productos{{ searchControl.value ? ' con "' + searchControl.value + '"' : '' }}</p>
+          </div>
+        </td>
+      </tr>
     </table>
+
+    <!-- Paginador -->
+    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
   </div>
 </div>

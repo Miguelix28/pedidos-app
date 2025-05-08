@@ -18,7 +18,7 @@
     </div>
     
     <!-- Acordeón de Personalización -->
-    <mat-accordion class="accordion-container">
+    <mat-accordion class="accordion-container"  multi>
       
       <!-- Acordeón 1: Cantidad de porciones -->
       <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto.category === 'Arma tu salchi'">
@@ -115,23 +115,6 @@
         </div>
       </mat-expansion-panel>
     </mat-accordion>    
-
-    <!-- Botones de navegación -->
-    <div class="botones-navegacion-container">
-      <button mat-raised-button
-              class="boton-navegacion"
-              [disabled]="currentStep === 0"
-              (click)="previousStep()">
-        Anterior
-      </button>
-    
-      <button mat-raised-button
-              class="boton-navegacion"
-              [disabled]="currentStep === 3"
-              (click)="nextStep()">
-        Siguiente
-      </button>
-    </div>
 
   </div> <!-- Cierre de producto-info -->
   <!-- Contenedor de botones en la parte inferior -->
