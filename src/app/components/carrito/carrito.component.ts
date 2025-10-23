@@ -229,7 +229,7 @@ numeroCelularValido(): boolean {
     localStorage.setItem('pedidoConfirmado', 'true');
     localStorage.removeItem('splashYaMostrado');
   
-    const numeroDestino = "573202141570";
+    const numeroDestino = "573163600104";
     const urlWhatsApp = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
     window.location.href = urlWhatsApp;
   }
