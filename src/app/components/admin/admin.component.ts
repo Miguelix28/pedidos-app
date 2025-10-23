@@ -96,6 +96,9 @@ export class AdminComponent implements OnInit {
     this.products$.subscribe(products => {
       this.dataSource.data = products;
       this.isLoading = false;
+       if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
     });
 
     // Configura el filtro de búsqueda
@@ -175,7 +178,7 @@ export class AdminComponent implements OnInit {
         description: '', 
         price: 0, 
         image: '', 
-        category: '', 
+        category: null, 
         customization: { exclusions: [], additions: [] }
       }
     });

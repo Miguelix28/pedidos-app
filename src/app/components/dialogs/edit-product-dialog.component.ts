@@ -36,7 +36,15 @@ interface Addition {
 export class EditProductDialog {
   productForm: FormGroup;
   separatorKeysCodes: number[] = [ENTER, COMMA];
-  categories = ['Hamburguesas', 'Pizzas', 'Bebidas', 'Postres', 'Complementos'];
+  categories = [
+  'Hamburguesa',
+  'Pizzas',
+  'Bebidas',
+  'Postres',
+  'Complementos',
+  'Arma tu salchi', 
+  'Salchipapa',    
+];
 
   constructor(
     private fb: FormBuilder,
