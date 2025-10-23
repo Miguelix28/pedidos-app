@@ -100,7 +100,7 @@ export class AdminComponent implements OnInit {
       this.dataSource.paginator = this.paginator;
     }
     });
-
+// 
     // Configura el filtro de búsqueda
     this.searchControl.valueChanges
       .pipe(debounceTime(300))
