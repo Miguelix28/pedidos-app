@@ -95,6 +95,32 @@
           </div>
         </div>
       </div>
+
+      <!-- Complementos -->
+      <div class="complements-section">
+        <div class="complements-header">
+          <h4>Complementos</h4>
+          <button type="button" mat-mini-fab color="primary" (click)="addComplement()">
+            <mat-icon>add</mat-icon>
+          </button>
+        </div>
+        <div formArrayName="complements" class="complements-container">
+          <div *ngFor="let complement of complementsArray.controls; let i = index" [formGroupName]="i" class="complement-item">
+            <mat-form-field appearance="outline">
+              <mat-label>Nombre</mat-label>
+              <input matInput formControlName="name" placeholder="Ej. Coca-Cola">
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Precio</mat-label>
+              <input matInput type="number" formControlName="price" min="0" step="0.01">
+            </mat-form-field>
+            <button mat-icon-button color="warn" type="button" (click)="removeComplement(i)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 

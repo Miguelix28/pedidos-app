@@ -61,7 +61,8 @@ export class EditProductDialog {
       category: [data?.category || '', Validators.required],
       customization: this.fb.group({
         exclusions: [data?.customization?.exclusions || []],
-        additions: this.fb.array(this.buildAdditionsFormArray(data?.customization?.additions || []))
+        additions: this.fb.array(this.buildAdditionsFormArray(data?.customization?.additions || [])),
+        complements: this.fb.array(this.buildComplementsFormArray(data?.customization?.complements || []))
       })
     });
   }
@@ -70,6 +71,22 @@ export class EditProductDialog {
   buildAdditionsFormArray(additions: Addition[]) {
     return additions.map(addition => this.createAdditionFormGroup(addition));
   }
+
+  buildComplementsFormArray(complements: Addition[]) {
+    return complements.map(complement => this.createAdditionFormGroup(complement));
+  }
+
+  get complementsArray() {
+  return this.productForm.get('customization')?.get('complements') as FormArray;
+}
+
+addComplement() {
+  this.complementsArray.push(this.createAdditionFormGroup());
+}
+
+removeComplement(index: number) {
+  this.complementsArray.removeAt(index);
+}
 
   // Crea un FormGroup para una adición
   createAdditionFormGroup(addition: Addition = { name: '', price: 0 }) {
