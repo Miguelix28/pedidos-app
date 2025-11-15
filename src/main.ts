@@ -17,6 +17,10 @@ bootstrapApplication(AppComponent, {
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
+    provideServiceWorker('ngsw-worker.js', {
+      enabled: environment.production,
+      registrationStrategy: 'registerWhenStable:30000'
+    }),
     // Añadir esto para soporte de compatibilidad
     { provide: FIREBASE_OPTIONS, useValue: environment.firebase }
   ]

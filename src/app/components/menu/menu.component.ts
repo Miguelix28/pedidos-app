@@ -171,13 +171,29 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   loadAllProducts() {
-    this.products$ = this.firebaseService.getProducts();
+  const cachedProducts = localStorage.getItem('cachedProducts');
+  if (cachedProducts) {
+    // Crear BehaviorSubject con los productos cacheados
+    this.products$ = new BehaviorSubject<Product[]>(JSON.parse(cachedProducts));
+  } else {
+    this.firebaseService.getProducts().pipe(take(1)).subscribe(products => {
+      localStorage.setItem('cachedProducts', JSON.stringify(products)); // Guardar cache
+      this.products$ = new BehaviorSubject<Product[]>(products);
+    });
   }
-  
-  loadCategories() {
-    this.categories$ = this.firebaseService.getCategories()
-    
+}
+
+loadCategories() {
+  const cachedCategories = localStorage.getItem('cachedCategories');
+  if (cachedCategories) {
+    this.categories$ = new BehaviorSubject<Category[]>(JSON.parse(cachedCategories));
+  } else {
+    this.firebaseService.getCategories().pipe(take(1)).subscribe(categories => {
+      localStorage.setItem('cachedCategories', JSON.stringify(categories));
+      this.categories$ = new BehaviorSubject<Category[]>(categories);
+    });
   }
+}
 
   setOrderType(type: string) {
     this.selectedType = type;

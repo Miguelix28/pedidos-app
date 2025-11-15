@@ -38,7 +38,7 @@
         *ngFor="let category of categories$ | async" 
         class="category-item"
         (click)="filterByCategory(category.name)">
-        <img [src]="category.icon" [alt]="category.name" [ngClass]="{ 'selected-image': selectedCategory === category.name }">
+        <img [src]="category.icon" [alt]="category.name" loading="lazy" [ngClass]="{ 'selected-image': selectedCategory === category.name }">
         <span>{{ category.name }}</span>
       </div>
     </div>
@@ -47,7 +47,7 @@
   <!-- 🔹 Productos -->
   <div class="products-container" #productsContainer>
     <div *ngFor="let product of filteredProducts$ | async" class="product-card">
-      <img [src]="product.image" alt="{{ product.name }}">
+      <img [src]="product.image" alt="{{ product.name }}" loading="lazy">
       <div class="details">
         <p>{{ product.category }}</p>
         <h3>{{ product.name }}</h3>

@@ -36,7 +36,7 @@
         <th mat-header-cell *matHeaderCellDef>Imagen</th>
         <td mat-cell *matCellDef="let product">
           <div class="product-img-container" [matTooltip]="product.name">
-            <img [src]="product.image" alt="Producto" class="product-img"/>
+            <img [src]="product.image" alt="Producto" loading="lazy" class="product-img"/>
           </div>
         </td>
       </ng-container>
