@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 // Interfaz para adiciones
 interface Addition {
@@ -28,7 +29,8 @@ interface Addition {
     MatInputModule,
     MatSelectModule,
     MatChipsModule,
-    MatIconModule
+    MatIconModule,
+    MatCheckboxModule
   ],
   templateUrl: './edit-product-dialog.component.html',
   styleUrls: ['./edit-product-dialog.component.css']
@@ -133,10 +135,15 @@ removeComplement(index: number) {
     this.productForm.get('customization')?.get('exclusions')?.setValue(currentExclusions);
   }
 
-  // Guardar los cambios
   onSave() {
     if (this.productForm.valid) {
-      this.dialogRef.close(this.productForm.value);
+      const formValue = this.productForm.value;
+
+      if (formValue.category === 'Salchipapa') {
+        formValue.customization.size = ['Personal', 'Para 2'];
+      }
+
+      this.dialogRef.close(formValue);
     }
   }
 

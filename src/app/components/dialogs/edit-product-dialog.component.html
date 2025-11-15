@@ -120,6 +120,20 @@
           </div>
         </div>
       </div>
+      <!-- Sección Tamaño -->
+      <div *ngIf="productForm.get('category')?.value === 'Salchipapa'" class="size-section">
+        <div class="size-header">
+          <h4>Tamaño</h4>
+        </div>
+        <div class="size-container">
+          <div class="size-item">
+            <mat-checkbox [checked]="true" disabled>Personal</mat-checkbox>
+          </div>
+          <div class="size-item">
+            <mat-checkbox [checked]="true" disabled>Para 2</mat-checkbox>
+          </div>
+        </div>
+      </div>
 
     </div>
   </div>
