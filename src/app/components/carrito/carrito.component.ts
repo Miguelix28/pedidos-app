@@ -244,7 +244,7 @@ numeroCelularValido(): boolean {
     this.showName = true;
     if (type === 'delivery') {
       this.showDireccion = true;
-      this.getUbicacion(); 
+      // this.getUbicacion(); 
     } else {
       this.showDireccion = false;
       this.direccion = '';
