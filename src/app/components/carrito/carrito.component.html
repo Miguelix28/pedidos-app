@@ -167,8 +167,11 @@
         />
         <div *ngIf="montoExcedido" class="advertencia-monto">
           El monto máximo permitido es $10.000.000
-        </div> 
-        <div *ngIf="!montoValido && formSubmitted" class="error-message">
+        </div>
+        <div *ngIf="formSubmitted && montoInsuficiente" class="error-message">
+          El monto debe ser igual o mayor que el total: ${{ total | number }}
+        </div>
+        <div *ngIf="!montoValido && formSubmitted && !montoInsuficiente" class="error-message">
           Ingresa un monto válido
         </div>
       </div>

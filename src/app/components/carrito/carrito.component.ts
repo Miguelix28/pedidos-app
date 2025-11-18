@@ -39,6 +39,7 @@ export class CarritoComponent implements OnInit {
   nombreCliente: string = '';
   numeroCelular: string = '';
   showName: boolean = false;
+  montoInsuficiente: boolean = false;
   
   constructor(private router: Router, private carritoService: CarritoService) {
   }
@@ -167,10 +168,12 @@ numeroCelularValido(): boolean {
     let mensaje = "📦 *Resumen del Pedido* 📦\n\n";
   
     this.carrito.forEach(item => {
-      if (item.category !== 'Arma tu salchi') {
-        mensaje += `*${item.cantidad}x ${item.category} ${item.name}* - $${(item.price * item.cantidad).toLocaleString()}\n`;
-      } else {
+      if (item.category === 'Salchipapa') {
+        mensaje += `*${item.cantidad}x ${item.category} ${item.name}* (${item.cantidadPersonas} persona${item.cantidadPersonas > 1 ? 's' : ''}) - $${(item.price * item.cantidad).toLocaleString()}\n`;
+      } else if (item.category === 'Arma tu salchi') {
         mensaje += `*${item.cantidad}x ${item.category} * - $${(item.price * item.cantidad).toLocaleString()}\n`;
+      } else {
+        mensaje += `*${item.cantidad}x ${item.category} ${item.name}* - $${(item.price * item.cantidad).toLocaleString()}\n`;
       }
   
       if (item.customization?.additions?.length > 0) {
@@ -404,8 +407,22 @@ numeroCelularValido(): boolean {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   }
   
-  validarMonto() {
-    const valorNumerico = Number(this.montoDisplay.replace(/[^0-9]/g, ''));
-    this.montoValido = !isNaN(valorNumerico) && valorNumerico > 0 && valorNumerico <= 10000000; // Máximo: 10 millones
+validarMonto() { 
+  const valorNumerico = Number(this.montoDisplay.replace(/[^0-9]/g, ''));
+
+  this.montoExcedido = valorNumerico > 10000000;
+  this.montoInsuficiente = valorNumerico < this.total;
+
+  if (isNaN(valorNumerico) || valorNumerico <= 0 || valorNumerico > 10000000) {
+    this.montoValido = false;
+    return;
   }
+
+  if (valorNumerico < this.total) {
+    this.montoValido = false;
+    return;
+  }
+
+  this.montoValido = true;
+}
 }

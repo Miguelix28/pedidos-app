@@ -170,79 +170,69 @@ export class ProductoDetalleComponent {
     this.producto.price = this.producto.precioUnitario * this.producto.cantidadPersonas;
   }
   
-  agregarAlCarrito() {
-    let carrito = JSON.parse(sessionStorage.getItem('carrito') || '[]');
-  
-    const exclusiones = Object.keys(this.exclusionesSeleccionadas).filter(key => this.exclusionesSeleccionadas[key]);
-  
-    const adiciones = Object.entries(this.adicionesSeleccionadas)
-      .filter(([_, cantidad]) => cantidad > 0)
-      .map(([nombre, cantidad]) => {
-        const additionInfo = this.producto.customization.additions.find((a: any) => a.name === nombre);
-        return {
-          nombre,
-          cantidad,
-          precioUnitario: additionInfo?.price || 0,
-          subtotal: (additionInfo?.price || 0) * cantidad
-        };
-      });
+agregarAlCarrito() {
+  let carrito = JSON.parse(sessionStorage.getItem('carrito') || '[]');
 
-    const complementos = Object.entries(this.complementosSeleccionados)
-      .filter(([_, cantidad]) => cantidad > 0)
-      .map(([nombre, cantidad]) => {
-        const complementsInfo = this.producto.customization.complements.find((a: any) => a.name === nombre);
-        return {
-          nombre,
-          cantidad,
-          precioUnitario: complementsInfo?.price || 0,
-          subtotal: (complementsInfo?.price || 0) * cantidad
-        };
-      });
-  
-    const precioTotal = this.getPrecioTotal(); // usamos tu método actual
-    let productoParaAgregar = {}
-    if (this.producto.category === 'Arma tu salchi') {
-      productoParaAgregar = {
-        ...this.producto,
-        // NroBases: this.producto.cantidadPersonas,
-        cantidad: this.cantidad,
-        customization: {
-          exclusions: exclusiones,
-          additions: adiciones,
-          complements: complementos
-        },
-        precioTotal: this.getPrecioTotal()// << guardamos el precio con adiciones incluidas
+  const exclusiones = Object.keys(this.exclusionesSeleccionadas).filter(key => this.exclusionesSeleccionadas[key]);
+
+  const adiciones = Object.entries(this.adicionesSeleccionadas)
+    .filter(([_, cantidad]) => cantidad > 0)
+    .map(([nombre, cantidad]) => {
+      const additionInfo = this.producto.customization.additions.find((a: any) => a.name === nombre);
+      return {
+        nombre,
+        cantidad,
+        precioUnitario: additionInfo?.price || 0,
+        subtotal: (additionInfo?.price || 0) * cantidad
       };
-    } else {
-      productoParaAgregar = {
-        ...this.producto,
-        // NroPersonas: this.producto.cantidadPersonas,
-        cantidad: this.cantidad,
-        customization: {
-          exclusions: exclusiones,
-          additions: adiciones,
-          complements: complementos
-        },
-        precioTotal: this.getPrecioTotal()
+    });
+
+  const complementos = Object.entries(this.complementosSeleccionados)
+    .filter(([_, cantidad]) => cantidad > 0)
+    .map(([nombre, cantidad]) => {
+      const complementsInfo = this.producto.customization.complements.find((a: any) => a.name === nombre);
+      return {
+        nombre,
+        cantidad,
+        precioUnitario: complementsInfo?.price || 0,
+        subtotal: (complementsInfo?.price || 0) * cantidad
       };
-    }
-    const index = carrito.findIndex((p: any) =>
-      p.id === this.producto.id &&
-      JSON.stringify(p.customization.exclusions) === JSON.stringify(exclusiones) &&
-      JSON.stringify(p.customization.additions) === JSON.stringify(adiciones) &&
-      JSON.stringify(p.customization.complements) === JSON.stringify(complementos)
-    );
-  
-    if (index !== -1) {
-      carrito[index].cantidad += this.cantidad;
-      carrito[index].precioTotal += precioTotal;
-    } else {
-      carrito.push(productoParaAgregar);
-    }
-    this.iniciarNuevoPedido(); // Reinicia el pedido
-    sessionStorage.setItem('carrito', JSON.stringify(carrito));
-    this.router.navigate(['/menu']);
+    });
+
+  // Incluye sizeSeleccionada en productoParaAgregar
+  const productoParaAgregar = {
+    ...this.producto,
+    cantidad: this.cantidad,
+    customization: {
+      exclusions: exclusiones,
+      additions: adiciones,
+      complements: complementos
+    },
+    sizeSeleccionada: this.sizeSeleccionada, // Guardar size
+    precioTotal: this.getPrecioTotal()
+  };
+
+  // Modifica el findIndex para comparar única por posición de tamaño/personas
+  const index = carrito.findIndex((p: any) =>
+    p.id === this.producto.id &&
+    p.sizeSeleccionada === this.sizeSeleccionada && // Añadido: compara el tamaño seleccionado
+    JSON.stringify(p.customization.exclusions) === JSON.stringify(exclusiones) &&
+    JSON.stringify(p.customization.additions) === JSON.stringify(adiciones) &&
+    JSON.stringify(p.customization.complements) === JSON.stringify(complementos)
+  );
+
+  if (index !== -1) {
+    carrito[index].cantidad += this.cantidad;
+    carrito[index].precioTotal += productoParaAgregar.precioTotal;
+  } else {
+    carrito.push(productoParaAgregar);
   }
+
+  this.iniciarNuevoPedido();
+  sessionStorage.setItem('carrito', JSON.stringify(carrito));
+  this.router.navigate(['/menu']);
+}
+
 
   iniciarNuevoPedido() {
     localStorage.removeItem('pedidoConfirmado');
