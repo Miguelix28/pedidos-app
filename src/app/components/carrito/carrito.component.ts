@@ -171,7 +171,7 @@ numeroCelularValido(): boolean {
       if (item.category === 'Salchipapa') {
         mensaje += `*${item.cantidad}x ${item.category} ${item.name}* (${item.cantidadPersonas} persona${item.cantidadPersonas > 1 ? 's' : ''}) - $${(item.price * item.cantidad).toLocaleString()}\n`;
       } else if (item.category === 'Arma tu salchi') {
-      mensaje += `*Arma tu salchi: \nCantidad de salchipapas armadas x ${item.cantidad}, \nCantidad de bases por salchipapa ${item.cantidadPersonas}* \nTotal arma tu salchi: $${(item.price * item.cantidad).toLocaleString()}\n`;
+      mensaje += `* X${item.cantidad} ${item.category}* (${item.cantidadPersonas} persona${item.cantidadPersonas > 1 ? 's' : ''}) - $${(item.price * item.cantidad).toLocaleString()}\n`;
       } else {
         mensaje += `*${item.cantidad}x ${item.category} ${item.name}* - $${(item.price * item.cantidad).toLocaleString()}\n`;
       }
