@@ -118,19 +118,21 @@
 
   </div> <!-- Cierre de producto-info -->
   <!-- Contenedor de botones en la parte inferior -->
-  <div class="bottom-buttons">
-    <div class="cantidad-container">
-      <button mat-icon-button (click)="disminuirCantidad()">
-        <mat-icon>remove</mat-icon>
-      </button>
-      <span>{{ cantidad }}</span>
-      <button mat-icon-button (click)="aumentarCantidad()">
-        <mat-icon>add</mat-icon>
-      </button>
-    </div>
-
-    <button mat-flat-button class="agregar-carrito" (click)="agregarAlCarrito()">
-      Agregar ${{ getPrecioTotal() | number }}
+<div class="bottom-buttons"> 
+  <!-- Solo muestra el selector de cantidad si NO es "Arma tu salchi" -->
+  <div class="cantidad-container" *ngIf="producto?.category !== 'Arma tu salchi'">
+    <button mat-icon-button (click)="disminuirCantidad()">
+      <mat-icon>remove</mat-icon>
+    </button>
+    <span>{{ cantidad }}</span>
+    <button mat-icon-button (click)="aumentarCantidad()">
+      <mat-icon>add</mat-icon>
     </button>
   </div>
+
+  <!-- El botón agregar siempre se muestra -->
+  <button mat-flat-button class="agregar-carrito" (click)="agregarAlCarrito()">
+    Agregar ${{ getPrecioTotal() | number }}
+  </button>
+</div>
 </div> <!-- Cierre de producto-detalle-container -->
