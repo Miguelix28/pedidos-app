@@ -60,10 +60,12 @@
                 <mat-icon>cancel</mat-icon>
               </button>
             </mat-chip-row>
-            <input placeholder="Nueva exclusión..."
-                   [matChipInputFor]="chipGrid"
-                   [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
-                   (matChipInputTokenEnd)="addExclusion($event)">
+            <input
+              placeholder="Nueva exclusión..."
+              [matChipInputFor]="chipGrid"
+              [matChipInputSeparatorKeyCodes]="separatorKeysCodes"
+              [matChipInputAddOnBlur]="true"
+              (matChipInputTokenEnd)="addExclusion($event)">
           </mat-chip-grid>
         </mat-form-field>
       </div>

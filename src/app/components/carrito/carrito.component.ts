@@ -171,27 +171,28 @@ numeroCelularValido(): boolean {
       if (item.category === 'Salchipapa') {
         mensaje += `*${item.cantidad}x ${item.category} ${item.name}* (${item.cantidadPersonas} persona${item.cantidadPersonas > 1 ? 's' : ''}) - $${(item.price * item.cantidad).toLocaleString()}\n`;
       } else if (item.category === 'Arma tu salchi') {
-        mensaje += `*${item.cantidad}x ${item.category} * - $${(item.price * item.cantidad).toLocaleString()}\n`;
+      mensaje += `*Arma tu salchi: \nCantidad de salchipapas armadas x ${item.cantidad}, \nCantidad de bases por salchipapa ${item.cantidadPersonas}* \nTotal arma tu salchi: $${(item.price * item.cantidad).toLocaleString()}\n`;
       } else {
         mensaje += `*${item.cantidad}x ${item.category} ${item.name}* - $${(item.price * item.cantidad).toLocaleString()}\n`;
       }
   
       if (item.customization?.additions?.length > 0) {
-        const adicionesTexto = item.customization.additions.map((add: any) => {
-          return `${add.nombre} (x${add.cantidad})`;
-        }).join(', ');
-        mensaje += `  🟢 Adiciones: ${adicionesTexto}\n`;
+        mensaje += `🟢 Adiciones:\n`;
+        item.customization.additions.forEach((add: any) => {
+          mensaje += `  ${add.nombre} (x${add.cantidad})\n`;
+        });
       }
-  
       if (item.customization?.exclusions?.length > 0) {
-        mensaje += `  🔴 Sin: ${item.customization.exclusions.join(', ')}\n`;
+        mensaje += `🔴 Sin:\n`;
+        item.customization.exclusions.forEach((exc: any) => {
+          mensaje += `  ${exc}\n`;
+        });
       }
-
       if (item.customization?.complements?.length > 0) {
-        const complementosTexto = item.customization.complements.map((add: any) => {
-          return `${add.nombre} (x${add.cantidad})`;
-        }).join(', ');
-        mensaje += ` 🔵 Complementos: ${complementosTexto}\n`;
+        mensaje += `🔵 Complementos:\n`;
+        item.customization.complements.forEach((add: any) => {
+          mensaje += `  ${add.nombre} (x${add.cantidad})\n`;
+        });
       }
   
       mensaje += "\n";
@@ -227,7 +228,6 @@ numeroCelularValido(): boolean {
     }
   
     mensaje += "\n¡Gracias por tu compra! 🙌";
-  
     this.pedidoConfirmado = true;
     localStorage.setItem('pedidoConfirmado', 'true');
     localStorage.removeItem('splashYaMostrado');
