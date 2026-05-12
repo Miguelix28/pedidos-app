@@ -12,8 +12,14 @@
     <button mat-raised-button color="primary" (click)="openDialog()">
       <mat-icon>add_circle</mat-icon> Nuevo Producto
     </button>
+    <button mat-raised-button color="accent" (click)="createCategory()">
+      <mat-icon>playlist_add</mat-icon> Nueva Categoria
+    </button>
     <button mat-raised-button color="primary" (click)="goHorarios()">
       <mat-icon>calendar_month</mat-icon> Horarios
+    </button>
+    <button mat-raised-button color="primary" (click)="toggleMeseroForm()">
+      <mat-icon>badge</mat-icon> Crear mesero
     </button>
 
     <mat-form-field appearance="outline" class="search-field">
@@ -23,14 +29,268 @@
     </mat-form-field>
   </div>
 
-  <!-- Tabla responsiva con cargador -->
-  <div class="table-container mat-elevation-z8">
-    <div *ngIf="isLoading" class="loading-spinner">
-      <mat-icon class="spin">refresh</mat-icon>
-      <p>Cargando productos...</p>
+  <div class="mesero-form" *ngIf="showMeseroForm">
+    <h3>Nuevo usuario mesero</h3>
+    <div class="mesero-form-grid">
+      <input
+        type="text"
+        placeholder="Nombre completo"
+        [(ngModel)]="meseroName"
+      />
+      <input
+        type="email"
+        placeholder="Correo"
+        [(ngModel)]="meseroEmail"
+      />
+      <input
+        type="password"
+        placeholder="Clave (min. 6)"
+        [(ngModel)]="meseroPassword"
+      />
     </div>
+    <div class="mesero-form-actions">
+      <button mat-stroked-button (click)="toggleMeseroForm()" [disabled]="creatingMesero">Cancelar</button>
+      <button mat-raised-button color="primary" (click)="createMeseroUser()" [disabled]="creatingMesero">
+        {{ creatingMesero ? 'Creando...' : 'Guardar mesero' }}
+      </button>
+    </div>
+  </div>
 
-    <table mat-table [dataSource]="dataSource" matSort>
+  <mat-accordion class="admin-accordion" multi>
+    <mat-expansion-panel [expanded]="true" class="admin-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>category</mat-icon>
+          Categorias
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ categories.length }} registradas
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="categories-panel">
+        <div *ngIf="!categories.length" class="categories-empty">
+          Aun no hay categorias creadas.
+        </div>
+
+        <div class="categories-list" *ngIf="categories.length">
+          <div class="category-item" *ngFor="let category of categories">
+            <span class="category-name">{{ category.name }}</span>
+            <div class="category-actions">
+              <button mat-icon-button color="primary" (click)="editCategory(category)" matTooltip="Editar categoria">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteCategory(category)" matTooltip="Eliminar categoria">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel [expanded]="true" class="admin-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>receipt_long</mat-icon>
+          Ordenes
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ ordersCount }} pedidos
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <div class="orders-panel">
+        <div class="orders-header">
+          <h2>Ordenes</h2>
+          <div class="orders-summary">
+            <span>{{ ordersCount }} pedidos</span>
+            <strong>{{ ordersTotalAmount.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</strong>
+          </div>
+        </div>
+
+        <div class="orders-toolbar">
+          <label>
+            Periodo
+            <select [value]="ordersPeriod" (change)="onOrdersPeriodChange($event)">
+              <option value="day">Dia</option>
+              <option value="month">Mes</option>
+              <option value="year">Anio</option>
+            </select>
+          </label>
+
+          <label *ngIf="ordersPeriod === 'day'">
+            Fecha
+            <input type="date" [value]="ordersDate" (change)="onOrdersDateChange($event)" />
+          </label>
+
+          <label *ngIf="ordersPeriod === 'month'">
+            Mes
+            <input type="month" [value]="ordersMonth" (change)="onOrdersMonthChange($event)" />
+          </label>
+
+          <label *ngIf="ordersPeriod === 'year'">
+            Anio
+            <input type="number" min="2020" max="3000" [value]="ordersYear" (change)="onOrdersYearChange($event)" />
+          </label>
+
+          <button mat-stroked-button color="primary" (click)="loadOrders()">
+            <mat-icon>refresh</mat-icon> Consultar
+          </button>
+
+          <button mat-stroked-button (click)="exportOrders('day')">Excel Dia</button>
+          <button mat-stroked-button (click)="exportOrders('month')">Excel Mes</button>
+          <button mat-stroked-button (click)="exportOrders('year')">Excel Anio</button>
+        </div>
+
+        <div class="orders-loading" *ngIf="ordersLoading">Cargando ordenes...</div>
+
+        <div class="orders-table-wrap" *ngIf="!ordersLoading">
+          <table mat-table [dataSource]="orders" class="orders-mat-table mat-elevation-z1">
+            <ng-container matColumnDef="fecha">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('fecha')" class="order-resizable-header">
+                <span>Fecha</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('fecha', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('fecha')">{{ formatDate(order.createdAt) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="cliente">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('cliente')" class="order-resizable-header">
+                <span>Cliente</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('cliente', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('cliente')" [title]="order.customerName">{{ order.customerName }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="telefono">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('telefono')" class="order-resizable-header">
+                <span>Telefono</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('telefono', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('telefono')">{{ order.customerPhone }}</td>
+            </ng-container>
+
+            <!--
+            <ng-container matColumnDef="mesa">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('mesa')" class="order-resizable-header">
+                <span>Mesa</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('mesa', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('mesa')">
+                <span class="order-badge order-badge-mesa" [class.order-badge-empty]="getOrderTableLabel(order) === '-'">
+                  {{ getOrderTableLabel(order) }}
+                </span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="origen">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('origen')" class="order-resizable-header">
+                <span>Origen</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('origen', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('origen')">
+                <span class="order-badge" [class.order-badge-mesero]="getOrderSourceLabel(order) === 'Mesero'" [class.order-badge-cliente]="getOrderSourceLabel(order) === 'Cliente'">
+                  {{ getOrderSourceLabel(order) }}
+                </span>
+              </td>
+            </ng-container>
+            -->
+
+            <ng-container matColumnDef="tipo">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('tipo')" class="order-resizable-header">
+                <span>Tipo</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('tipo', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('tipo')">{{ getOrderTypeLabel(order.orderType) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="pago">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('pago')" class="order-resizable-header">
+                <span>Pago</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('pago', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('pago')">{{ order.paymentMethod }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="items">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('items')" class="order-resizable-header">
+                <span>Items</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('items', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('items')">{{ order.items.length || 0 }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="total">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('total')" class="order-resizable-header">
+                <span>Total</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('total', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('total')">{{ order.total.toLocaleString('es-CO', { style: 'currency', currency: 'COP', minimumFractionDigits: 0, maximumFractionDigits: 0 }) }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="estado">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('estado')" class="order-resizable-header">
+                <span>Estado</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('estado', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('estado')">{{ getOrderStatusLabel(order.status || 'pending') }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="accion">
+              <th mat-header-cell *matHeaderCellDef [style.width.px]="getOrderColumnWidth('accion')" class="order-resizable-header">
+                <span>Accion</span>
+                <span class="column-resize-handle" (mousedown)="startOrderColumnResize('accion', $event)"></span>
+              </th>
+              <td mat-cell *matCellDef="let order" [style.width.px]="getOrderColumnWidth('accion')" class="orders-action-cell">
+                <div class="orders-actions-stack">
+                  <button mat-icon-button class="orders-action-icon orders-action-confirmed" matTooltip="Marcar como orden recibida" (click)="updateOrderStatus(order, 'confirmed')">
+                    <mat-icon>check_circle</mat-icon>
+                  </button>
+                  <button mat-icon-button class="orders-action-icon orders-action-preparing" matTooltip="Marcar en preparacion y avisar por WhatsApp" (click)="updateOrderStatus(order, 'preparing', true)">
+                    <mat-icon>restaurant</mat-icon>
+                  </button>
+                  <button mat-icon-button class="orders-action-icon orders-action-ready" matTooltip="Marcar orden lista y avisar por WhatsApp" (click)="markOrderReady(order)">
+                    <mat-icon>send</mat-icon>
+                  </button>
+                  <button mat-icon-button class="orders-action-icon orders-action-print" matTooltip="Generar comanda" (click)="generateOrderComanda(order)">
+                    <mat-icon>receipt_long</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedOrderColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedOrderColumns"></tr>
+            <tr class="mat-row no-data-row" *matNoDataRow>
+              <td class="mat-cell" [attr.colspan]="displayedOrderColumns.length">
+                <div class="orders-empty">No hay ordenes para el filtro seleccionado.</div>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </mat-expansion-panel>
+
+    <mat-expansion-panel [expanded]="true" class="admin-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title>
+          <mat-icon>inventory_2</mat-icon>
+          Productos
+        </mat-panel-title>
+        <mat-panel-description>
+          {{ dataSource.data.length }} registros
+        </mat-panel-description>
+      </mat-expansion-panel-header>
+
+      <!-- Tabla responsiva con cargador -->
+      <div class="table-container mat-elevation-z8">
+        <div *ngIf="isLoading" class="loading-spinner">
+          <mat-icon class="spin">refresh</mat-icon>
+          <p>Cargando productos...</p>
+        </div>
+
+        <table mat-table [dataSource]="dataSource" matSort>
       <!-- Imagen -->
       <ng-container matColumnDef="image">
         <th mat-header-cell *matHeaderCellDef>Imagen</th>
@@ -95,7 +355,7 @@
             <button mat-mini-fab color="primary" (click)="openDialog(product)" matTooltip="Editar producto">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-mini-fab color="warn" (click)="deleteProduct(product.id)" matTooltip="Eliminar producto">
+            <button mat-mini-fab color="warn" (click)="deleteProduct(product.id || product._id)" matTooltip="Eliminar producto">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
@@ -114,9 +374,43 @@
           </div>
         </td>
       </tr>
-    </table>
+        </table>
 
-    <!-- Paginador -->
-    <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+        <!-- Paginador -->
+        <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+      </div>
+    </mat-expansion-panel>
+  </mat-accordion>
+</div>
+
+<div class="comanda-preview-overlay" *ngIf="showComandaPreview" (click)="closeComandaPreview()">
+  <div class="comanda-preview-modal" (click)="$event.stopPropagation()">
+    <div class="comanda-preview-header">
+      <div>
+        <h3>Vista previa TXT</h3>
+        <p>{{ comandaPreviewFileName }}</p>
+      </div>
+      <button mat-icon-button (click)="closeComandaPreview()" aria-label="Cerrar vista previa">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="comanda-preview-paper">
+      <pre class="comanda-preview-textarea">{{ comandaPreviewText }}</pre>
+    </div>
+
+    <div class="comanda-preview-actions">
+      <button mat-stroked-button (click)="copyComandaPreview()">
+        <mat-icon>content_copy</mat-icon>
+        Copiar
+      </button>
+      <button mat-stroked-button color="primary" (click)="downloadPreviewTxt()">
+        <mat-icon>download</mat-icon>
+        Descargar TXT
+      </button>
+      <button mat-raised-button color="primary" (click)="closeComandaPreview()">
+        Cerrar
+      </button>
+    </div>
   </div>
 </div>

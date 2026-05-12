@@ -3,10 +3,13 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --port 4200",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "migrate:db": "node scripts/migrate_firestore_to_mongo.js",
+    "dev": "concurrently \"npm run api\" \"npm run start\"",
+    "api": "npx vercel dev --listen 3001"
   },
   "private": true,
   "dependencies": {
@@ -21,8 +24,15 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "@angular/service-worker": "^19.2.0",
+    "body-parser": "^2.2.2",
+    "cloudinary": "^1.38.0",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "firebase-admin": "^13.7.0",
     "moment-timezone": "^0.5.48",
+    "mongoose": "^7.5.0",
     "rxjs": "~7.8.0",
+    "sweetalert2": "^11.26.24",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
@@ -31,6 +41,7 @@
     "@angular/cli": "^19.2.1",
     "@angular/compiler-cli": "^19.2.0",
     "@types/jasmine": "~5.1.0",
+    "concurrently": "^9.2.1",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

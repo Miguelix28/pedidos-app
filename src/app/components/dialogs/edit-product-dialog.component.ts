@@ -10,8 +10,11 @@ import { MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { ApiService } from '../../services/api.service';
+import { GoogleAuthService } from '../../services/google.auth.service';
+import { firstValueFrom } from 'rxjs';
+import { AlertService } from '../../services/alert.service';
 
-// Interfaz para adiciones
 interface Addition {
   name: string;
   price: number;
@@ -38,24 +41,31 @@ interface Addition {
 export class EditProductDialog {
   productForm: FormGroup;
   separatorKeysCodes: number[] = [ENTER, COMMA];
-  categories = [
-  'Hamburguesa',
-  'Pizzas',
-  'Bebidas',
-  'Postres',
-  'Complementos',
-  'Arma tu salchi', 
-  'Salchipapa',    
-];
+  isUploadingImage = false;
+  staticCategories = [
+    'Hamburguesa',
+    'Pizzas',
+    'Bebidas',
+    'Postres',
+    'Complementos',
+    'Arma tu salchi',
+    'Salchipapa',
+  ];
+  categories: string[] = [];
 
   constructor(
     private fb: FormBuilder,
     public dialogRef: MatDialogRef<EditProductDialog>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private apiService: ApiService,
+    private authService: GoogleAuthService,
+    private alertService: AlertService
   ) {
-    // Inicializa el formulario con los datos del producto o valores por defecto
+    const incomingCategories = Array.isArray(data?.categories) ? data.categories : [];
+    this.categories = incomingCategories.length ? incomingCategories : this.staticCategories;
+
     this.productForm = this.fb.group({
-      id: [data?.id || null],
+      id: [data?._id || null],
       name: [data?.name || '', [Validators.required, Validators.minLength(3)]],
       description: [data?.description || '', Validators.required],
       price: [data?.price || 0, [Validators.required, Validators.min(0)]],
@@ -69,7 +79,6 @@ export class EditProductDialog {
     });
   }
 
-  // Construye un FormArray para las adiciones
   buildAdditionsFormArray(additions: Addition[]) {
     return additions.map(addition => this.createAdditionFormGroup(addition));
   }
@@ -79,18 +88,17 @@ export class EditProductDialog {
   }
 
   get complementsArray() {
-  return this.productForm.get('customization')?.get('complements') as FormArray;
-}
+    return this.productForm.get('customization')?.get('complements') as FormArray;
+  }
 
-addComplement() {
-  this.complementsArray.push(this.createAdditionFormGroup());
-}
+  addComplement() {
+    this.complementsArray.push(this.createAdditionFormGroup());
+  }
 
-removeComplement(index: number) {
-  this.complementsArray.removeAt(index);
-}
+  removeComplement(index: number) {
+    this.complementsArray.removeAt(index);
+  }
 
-  // Crea un FormGroup para una adición
   createAdditionFormGroup(addition: Addition = { name: '', price: 0 }) {
     return this.fb.group({
       name: [addition.name, Validators.required],
@@ -98,27 +106,22 @@ removeComplement(index: number) {
     });
   }
 
-  // Getter para el FormArray de adiciones
   get additionsArray() {
     return this.productForm.get('customization')?.get('additions') as FormArray;
   }
 
-  // Getter para las exclusiones
   get exclusions() {
     return this.productForm.get('customization')?.get('exclusions')?.value || [];
   }
 
-  // Agregar una nueva adición al FormArray
   addAddition() {
     this.additionsArray.push(this.createAdditionFormGroup());
   }
 
-  // Eliminar una adición del FormArray
   removeAddition(index: number) {
     this.additionsArray.removeAt(index);
   }
 
-  // Agregar una exclusión
   addExclusion(event: MatChipInputEvent) {
     const value = (event.value || '').trim();
     if (value) {
@@ -129,25 +132,66 @@ removeComplement(index: number) {
     }
   }
 
-  // Eliminar una exclusión
   removeExclusion(exclusion: string) {
     const currentExclusions = this.exclusions.filter((e: string) => e !== exclusion);
     this.productForm.get('customization')?.get('exclusions')?.setValue(currentExclusions);
   }
 
+  // 👇 Método para subir imagen
+  async onImageSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    const token = await this.authService.getIdToken();
+    if (!token) {
+      this.alertService.warning('No autorizado', 3000);
+      return;
+    }
+
+    this.isUploadingImage = true;
+    try {
+      const base64 = await this.fileToBase64(file);
+      const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '')}`;
+      const response = await firstValueFrom(
+        this.apiService.uploadProductImage(base64, fileName, token)
+      );
+
+      if (response?.imageUrl) {
+        this.productForm.get('image')?.setValue(response.imageUrl);
+        this.alertService.success('Imagen subida correctamente', 3000);
+      }
+    } catch (error) {
+      console.error('Error subiendo imagen:', error);
+      this.alertService.error('Error al subir la imagen', 3000);
+    } finally {
+      this.isUploadingImage = false;
+      input.value = '';
+    }
+  }
+
+  fileToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        resolve(result.split(',')[1]);
+      };
+      reader.onerror = (error) => reject(error);
+      reader.readAsDataURL(file);
+    });
+  }
+
   onSave() {
     if (this.productForm.valid) {
       const formValue = this.productForm.value;
-
       if (formValue.category === 'Salchipapa') {
         formValue.customization.size = ['Personal', 'Para 2'];
       }
-
       this.dialogRef.close(formValue);
     }
   }
 
-  // Cancelar
   onCancel() {
     this.dialogRef.close();
   }

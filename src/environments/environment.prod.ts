@@ -9,5 +9,7 @@ export const environment = {
     appId: "1:1085086037703:web:6806e18c715c43bbab30e2",
     measurementId: "G-HKJN5JFYGL"
   },
-  redirectUrl: 'https://pedidos-app-d4812.firebaseapp.com/login'
+  redirectUrl: 'https://pedidos-app-d4812.web.app/login',
+  // apiBaseUrl: 'https://<tu-proyecto>.vercel.app/api'
+  apiBaseUrl: 'https://salchihouse.vercel.app/api'
 };

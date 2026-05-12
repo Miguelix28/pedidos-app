@@ -5,11 +5,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatListModule } from '@angular/material/list';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { ApiService, OrderPayload } from '../../services/api.service';
+import { GoogleAuthService } from '../../services/google.auth.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-carrito',
@@ -40,11 +43,21 @@ export class CarritoComponent implements OnInit {
   numeroCelular: string = '';
   showName: boolean = false;
   montoInsuficiente: boolean = false;
+  isMeseroMode: boolean = false;
+  tableNumber: string = '';
+  quickTables: number[] = Array.from({ length: 20 }, (_, i) => i + 1);
   
-  constructor(private router: Router, private carritoService: CarritoService) {
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute,
+    private carritoService: CarritoService,
+    private apiService: ApiService,
+    private googleAuth: GoogleAuthService
+  ) {
   }
 
   ngOnInit() {
+    this.isMeseroMode = this.route.snapshot.data['mode'] === 'mesero' || this.router.url.startsWith('/mesero/');
     this.verificarSiPedidoModificado();
     const carritoStorage = sessionStorage.getItem('carrito');
     this.carrito = carritoStorage ? JSON.parse(carritoStorage) : [];
@@ -123,10 +136,29 @@ filtrarCelular(event: Event) {
   this.numeroCelular = input.value;
 }
 
+onTableInput(event: Event) {
+  const input = event.target as HTMLInputElement;
+  input.value = input.value.replace(/\D/g, '').slice(0, 3);
+  this.tableNumber = input.value;
+}
+
+selectTable(table: number) {
+  this.tableNumber = String(table);
+}
+
+clearTableSelection() {
+  this.tableNumber = '';
+}
+
 numeroCelularValido(): boolean {
   return /^\d{10}$/.test(this.numeroCelular?.toString() || '');
 }
-  irAPagar() {
+
+  private getOrderSourceLabel(): 'Cliente' | 'Mesero' {
+    return this.isMeseroMode ? 'Mesero' : 'Cliente';
+  }
+
+  async irAPagar() {
     this.formSubmitted = true;
     if (this.pedidoConfirmado) return;
     if (!this.selectedType) {
@@ -138,6 +170,10 @@ numeroCelularValido(): boolean {
     }
     
     if (!this.numeroCelular || this.numeroCelular.toString().length !== 10 || !/^\d{10}$/.test(this.numeroCelular.toString())) {
+      return;
+    }
+
+    if (this.isMeseroMode && this.selectedType === 'restaurant' && !this.tableNumber.trim()) {
       return;
     }
 
@@ -213,7 +249,12 @@ numeroCelularValido(): boolean {
       mensaje += `🥡 *Tipo de Pedido*: Para llevar\n`;
     } else {
       mensaje += `🍽️ *Tipo de Pedido*: Para comer en el restaurante\n`;
+      if (this.tableNumber.trim()) {
+        mensaje += `🪑 *Mesa*: ${this.tableNumber.trim()}\n`;
+      }
     }
+
+    mensaje += `🧾 *Origen*: ${this.getOrderSourceLabel()}\n`;
   
     if (this.mensajeAdicional && this.mensajeAdicional.trim()) {
       mensaje += `✉️ *Observaciones del pedido*: ${this.mensajeAdicional}\n`;
@@ -231,15 +272,51 @@ numeroCelularValido(): boolean {
     this.pedidoConfirmado = true;
     localStorage.setItem('pedidoConfirmado', 'true');
     localStorage.removeItem('splashYaMostrado');
-  
-    const numeroDestino = "573163600104";
+
+    // Enviar el pedido al backend para registro como flujo guest desde menu/carrito.
+    const orderPayload: OrderPayload = {
+      customerName: this.nombreCliente,
+      customerPhone: this.numeroCelular,
+      orderType: this.carritoService.getOrderType(),
+      source: this.isMeseroMode ? 'mesero' : 'cliente',
+      tableNumber: this.selectedType === 'restaurant' ? this.tableNumber.trim() : '',
+      deliveryAddress: this.direccion || '',
+      paymentMethod: this.metodoPago,
+      paymentAmount: Number(this.montoDisplay.replace(/[^0-9]/g, '')) || 0,
+      subtotal: this.subtotal,
+      total: this.total,
+      note: this.mensajeAdicional || '',
+      items: this.carrito.map((item: any) => ({
+        productId: String(item.id || item._id || ''),
+        name: String(item.name || 'Producto sin nombre'),
+        category: item.category,
+        price: Number(item.price || 0),
+        quantity: item.cantidad || 1,
+        customization: item.customization || {}
+      }))
+    };
+
+    try {
+      await firstValueFrom(this.apiService.createOrder(orderPayload));
+      console.log('Pedido guardado en backend');
+    } catch (err) {
+      console.error('No se pudo guardar el pedido en backend:', err);
+    }
+
+    // const numeroDestino = "573163600104";
+    const numeroDestino = "573165345924";
     const urlWhatsApp = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
-    window.location.href = urlWhatsApp;
+
+    // Try opening a new tab first; if blocked, fallback to same-tab redirect.
+    const popup = window.open(urlWhatsApp, '_blank');
+    if (!popup) {
+      window.location.href = urlWhatsApp;
+    }
   }
   
 
   volverAlMenu() {
-    this.router.navigate(['/menu']);
+    this.router.navigate([this.isMeseroMode ? '/mesero/menu' : '/menu']);
   }
 
   setOrderType(type: string) {
@@ -251,6 +328,9 @@ numeroCelularValido(): boolean {
     } else {
       this.showDireccion = false;
       this.direccion = '';
+    }
+    if (type !== 'restaurant') {
+      this.tableNumber = '';
     }
     this.carritoService.setOrderType(type);
   }
@@ -321,6 +401,7 @@ numeroCelularValido(): boolean {
     const datosActuales = {
       carrito: estadoCarrito,
       orderType: this.carritoService.getOrderType(),
+      tableNumber: this.tableNumber,
       direccion: this.direccion,
       mensajeAdicional: this.mensajeAdicional
     };
@@ -361,6 +442,7 @@ numeroCelularValido(): boolean {
     
     // Verificar si cambió el tipo de pedido
     const tipoModificado = estadoGuardado.orderType !== this.carritoService.getOrderType();
+    const mesaModificada = (estadoGuardado.tableNumber || '') !== this.tableNumber;
     
     // Verificar si cambió la dirección
     const direccionModificada = estadoGuardado.direccion !== this.direccion;
@@ -369,7 +451,7 @@ numeroCelularValido(): boolean {
     const mensajeModificado = estadoGuardado.mensajeAdicional !== this.mensajeAdicional;
     
     // Si hubo alguna modificación
-    if (productoModificado || tipoModificado || direccionModificada || mensajeModificado) {
+    if (productoModificado || tipoModificado || mesaModificada || direccionModificada || mensajeModificado) {
       this.reactivarBoton();
       return true;
     }

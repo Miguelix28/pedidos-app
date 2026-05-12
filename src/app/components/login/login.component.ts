@@ -39,7 +39,7 @@ export class LoginComponent implements OnInit {
         sessionStorage.setItem('uid', user.uid);
         sessionStorage.setItem('displayName', user.displayName || '');
         await this.authService.updateUserData(user);
-        this.router.navigate(['/admin']);
+        await this.redirectByRole();
         return;
       }
     } catch (error) {
@@ -48,7 +48,7 @@ export class LoginComponent implements OnInit {
     
     // Si ya está logueado por sesión, redirige
     if (this.authService.isLoggedIn()) {
-      this.router.navigate(['/admin']);
+      await this.redirectByRole();
     }
   }
   
@@ -74,8 +74,7 @@ export class LoginComponent implements OnInit {
       
       // Animación antes de redirigir
       setTimeout(() => {
-        const redirectUrl = this.redirectService.getRedirectUrl();
-        this.router.navigate([redirectUrl || '/admin']);
+        this.redirectByRole();
       }, 800);
     } catch (error: any) {
       console.error('Error al iniciar sesión:', error);
@@ -104,8 +103,7 @@ export class LoginComponent implements OnInit {
       await this.authService.googleSignIn();
       this.loggedIn = true;
       setTimeout(() => {
-        const redirectUrl = this.redirectService.getRedirectUrl();
-        this.router.navigate([redirectUrl || '/admin']);
+        this.redirectByRole();
       }, 800); // Este tiempo debe coincidir con la duración de la animación
     } catch (error) {
       console.error('Error al iniciar sesión con Google:', error);
@@ -113,5 +111,12 @@ export class LoginComponent implements OnInit {
     } finally {
       this.loading = false;
     }
+  }
+
+  private async redirectByRole(): Promise<void> {
+    const role = await this.authService.getCurrentUserRole();
+    const defaultRedirect = role === 'mesero' ? '/mesero/menu' : '/admin';
+    const redirectUrl = this.redirectService.getRedirectUrl(defaultRedirect);
+    await this.router.navigate([redirectUrl || defaultRedirect]);
   }
 }

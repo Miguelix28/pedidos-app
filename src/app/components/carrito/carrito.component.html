@@ -119,6 +119,38 @@
       Debes seleccionar el tipo de pedido
     </div>
 
+    <div *ngIf="isMeseroMode && selectedType === 'restaurant'" class="direccion-input">
+      <h3><label for="mesa">Mesa</label></h3>
+      <div class="mesa-quick-grid">
+        <button
+          type="button"
+          class="mesa-chip"
+          *ngFor="let mesa of quickTables"
+          [class.active]="tableNumber === ('' + mesa)"
+          (click)="selectTable(mesa)">
+          {{ mesa }}
+        </button>
+        <button
+          type="button"
+          class="mesa-chip mesa-chip-clear"
+          (click)="clearTableSelection()">
+          Limpiar
+        </button>
+      </div>
+      <input
+        id="mesa"
+        type="text"
+        [(ngModel)]="tableNumber"
+        placeholder="Ej: 5"
+        (input)="onTableInput($event)"
+        [ngClass]="{'invalid-input': (!tableNumber || tableNumber.trim() === '') && formSubmitted}"
+        maxlength="10"
+      />
+      <div *ngIf="(!tableNumber || tableNumber.trim() === '') && formSubmitted" class="error-message">
+        Debes ingresar el número de mesa
+      </div>
+    </div>
+
     <div *ngIf="showDireccion" class="direccion-input">
       <h3><label for="direccion">Dirección de entrega</label></h3>
       

@@ -11,8 +11,8 @@ export class AuthRedirectService {
     this.redirectUrl = url;
   }
 
-  getRedirectUrl(): string {
-    const url = this.redirectUrl !== '/' ? this.redirectUrl : '/admin';
+  getRedirectUrl(defaultUrl: string = '/admin'): string {
+    const url = this.redirectUrl !== '/' ? this.redirectUrl : defaultUrl;
     this.redirectUrl = '/'; // Resetea después
     console.log('Redirigiendo a:', url);
     return url;

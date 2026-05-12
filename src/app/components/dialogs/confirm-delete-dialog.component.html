@@ -1,0 +1,13 @@
+<h2 mat-dialog-title>{{ data.title || 'Confirmar eliminacion' }}</h2>
+
+<div mat-dialog-content class="content">
+  <div class="icon-wrap">
+    <mat-icon>warning</mat-icon>
+  </div>
+  <p>{{ data.message || 'Esta accion no se puede deshacer.' }}</p>
+</div>
+
+<div mat-dialog-actions align="end">
+  <button mat-button type="button" (click)="onCancel()">{{ data.cancelText || 'Cancelar' }}</button>
+  <button mat-raised-button color="warn" type="button" (click)="onConfirm()">{{ data.confirmText || 'Eliminar' }}</button>
+</div>

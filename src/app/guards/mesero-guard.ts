@@ -9,45 +9,45 @@ import { switchMap, map, catchError, take } from 'rxjs/operators';
 @Injectable({
   providedIn: 'root'
 })
-export class AdminGuard implements CanActivate {
+export class MeseroGuard implements CanActivate {
   private auth = inject(Auth);
   private firestore = inject(Firestore);
   private router = inject(Router);
   private redirectService = inject(AuthRedirectService);
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    // Always resolve auth state from Firebase to avoid stale sessionStorage values after reload.
     return user(this.auth).pipe(
       take(1),
-      switchMap(user => {
-        if (!user) {
-          console.log('Acceso denegado - Usuario no autenticado');
+      switchMap((currentUser) => {
+        if (!currentUser) {
           this.redirectService.setRedirectUrl(state.url);
           this.router.navigate(['/login']);
           return of(false);
         }
 
-        const userRef = doc(this.firestore, `users/${user.uid}`);
+        const userRef = doc(this.firestore, `users/${currentUser.uid}`);
         return from(getDoc(userRef)).pipe(
-          map(snapshot => {
+          map((snapshot) => {
             const userData = snapshot.data();
-            const isAdmin = userData?.['role'] === 'admin';
+            const role = userData?.['role'] || 'user';
+            const isMesero = role === 'mesero';
 
-            if (!isAdmin) {
-              console.log('Acceso denegado - Usuario no es administrador');
-              this.router.navigate(['/']);
+            if (!isMesero) {
+              if (role === 'admin') {
+                this.router.navigate(['/admin']);
+              } else {
+                this.redirectService.setRedirectUrl(state.url);
+                this.router.navigate(['/login']);
+              }
+              return false;
             }
 
-            // Keep sessionStorage only as UI hint, not as authorization source.
-            if (isAdmin) {
-              sessionStorage.setItem('loggedIn', 'true');
-              sessionStorage.setItem('uid', user.uid);
-            }
-
-            return isAdmin;
+            sessionStorage.setItem('loggedIn', 'true');
+            sessionStorage.setItem('uid', currentUser.uid);
+            return true;
           }),
           catchError((error) => {
-            console.error('Error verificando rol admin:', error);
+            console.error('Error verificando rol mesero:', error);
             this.router.navigate(['/login']);
             return of(false);
           })

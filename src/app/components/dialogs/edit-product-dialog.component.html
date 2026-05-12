@@ -37,6 +37,20 @@
         <mat-error *ngIf="productForm.get('image')?.hasError('required')">La imagen es obligatoria</mat-error>
       </mat-form-field>
 
+      <!-- Botón para subir imagen -->
+      <div class="image-upload-section">
+        <input #fileInput type="file" accept="image/*" hidden (change)="onImageSelected($event)">
+        <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="isUploadingImage">
+          <mat-icon>cloud_upload</mat-icon> 
+          {{ isUploadingImage ? 'Subiendo...' : 'Subir imagen' }}
+        </button>
+        
+        <!-- Preview de la imagen -->
+        <div *ngIf="productForm.get('image')?.value" class="image-preview">
+          <img [src]="productForm.get('image')?.value" alt="Preview" style="max-width: 150px; max-height: 100px; object-fit: cover; border-radius: 8px;">
+        </div>
+      </div>
+
       <!-- Descripción -->
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Descripción</mat-label>

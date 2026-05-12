@@ -569,3 +569,40 @@ ul {
   font-size: 12px;
   margin-top: 4px;
 }
+
+.mesa-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.mesa-chip {
+  border: 1px solid #d9d9d9;
+  background: #f8f8f8;
+  color: #3c3c3b;
+  border-radius: 999px;
+  min-height: 34px;
+  padding: 6px 8px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mesa-chip.active {
+  background: #3c3c3b;
+  color: #fff;
+  border-color: #3c3c3b;
+}
+
+.mesa-chip-clear {
+  grid-column: span 2;
+  background: #fff5f5;
+  border-color: #ffcccc;
+  color: #b00020;
+}
+
+@media (max-width: 480px) {
+  .mesa-quick-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

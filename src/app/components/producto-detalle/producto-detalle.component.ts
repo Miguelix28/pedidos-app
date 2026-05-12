@@ -31,6 +31,7 @@ export class ProductoDetalleComponent {
   titleAddittions: string = 'Adiciones';
   titlePorciones: string = 'Cantidad de personas';
   currentStep: number = 0;
+  isMeseroMode: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -46,6 +47,8 @@ export class ProductoDetalleComponent {
       container.scrollTop = 0;
     }
   }, 200);
+    this.isMeseroMode = this.route.snapshot.data['mode'] === 'mesero' || this.router.url.startsWith('/mesero/');
+
     const productId = this.route.snapshot.paramMap.get('id');
     if (productId === 'Arma-tu-Salchi!') {
       this.titleAddittions = 'Personaliza tu salchi con adiciones';
@@ -56,8 +59,9 @@ export class ProductoDetalleComponent {
     if (productId) {
       this.productoService.getProductoById(productId).subscribe(producto => {
         if (!producto) {
-          this.router.navigate(['/menu']);
+          this.router.navigate([this.getMenuPath()]);
         }
+        debugger
         if (producto.category === 'Salchipapa') {
           this.titlePorciones = 'Cantidad de personas';
         }
@@ -71,7 +75,7 @@ export class ProductoDetalleComponent {
   }
 
   volverAlMenu() {
-    this.router.navigate(['/menu']);
+    this.router.navigate([this.getMenuPath()]);
   }
 
   aumentarCantidad() {
@@ -230,7 +234,7 @@ agregarAlCarrito() {
 
   this.iniciarNuevoPedido();
   sessionStorage.setItem('carrito', JSON.stringify(carrito));
-  this.router.navigate(['/menu']);
+  this.router.navigate([this.getMenuPath()]);
 }
 
 
@@ -275,5 +279,9 @@ agregarAlCarrito() {
         });
       }, 100);
     }
+  }
+
+  private getMenuPath(): string {
+    return this.isMeseroMode ? '/mesero/menu' : '/menu';
   }
 }

@@ -1,12 +1,13 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Category, FirebaseService, Product } from '../../services/firebase.service';
+import { Category, Product } from '../../services/firebase.service';
+import { ApiService } from '../../services/api.service';
 import { ProductoService } from '../../services/producto.service';
 import { BehaviorSubject, combineLatest, map, Observable, startWith, take } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { CarritoService } from '../../services/carrito.service';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -19,7 +20,6 @@ import { HorarioService } from '../../services/horario.service';
   selector: 'app-menu',
   standalone: true,
   imports: [CommonModule, MatIconModule, MatButtonModule, MatCardModule, MatFormFieldModule, MatInputModule, FormsModule, SplashScreenComponent],
-  providers: [FirebaseService], 
   templateUrl: './menu.component.html',
   styleUrls: ['./menu.component.css']
 })
@@ -28,17 +28,18 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('productsContainer', { static: false }) productsContainer!: ElementRef;
   categories$!: Observable<Category[]>;
   selectedType: string = 'restaurant'; // Valor predeterminado
-  private firebaseService = inject(FirebaseService);
+  private apiService = inject(ApiService);
   private productoService = inject(ProductoService);
   private carritoService = inject(CarritoService);
   private horarioService = inject(HorarioService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
   cantidadCarrito: any;
   carrito: any[] = [];
   total: number = 0;
   searchTerm: string = '';
   filteredProducts: any;
-  products$ = this.firebaseService.getProducts(); // fuente base
+  products$ = this.apiService.getProducts(); // fuente base usando API
   filteredProducts$ = new BehaviorSubject<any[]>([]);
   searchTerm$ = new BehaviorSubject<string>('');
   selectedCategory: string | null = null;
@@ -53,6 +54,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   showClosedModal: boolean = false;
   estaAbierto: boolean = false;
   mensajeHorario: string = '';
+  isMeseroMode: boolean = false;
 
   ngAfterViewInit(): void {
     // this.adjustProductsContainerMargin();
@@ -80,6 +82,7 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit() {
+  this.isMeseroMode = this.route.snapshot.data['mode'] === 'mesero' || this.router.url.startsWith('/mesero/');
   // Verificar si el restaurante está abierto
   // Verificar si el restaurante está abierto
   this.horarioService.checkEstaAbierto().subscribe({
@@ -173,12 +176,14 @@ export class MenuComponent implements OnInit, AfterViewInit, OnDestroy {
   loadAllProducts() {
   const cachedProducts = localStorage.getItem('cachedProducts');
   if (cachedProducts) {
-    // Crear BehaviorSubject con los productos cacheados
     this.products$ = new BehaviorSubject<Product[]>(JSON.parse(cachedProducts));
   } else {
-    this.firebaseService.getProducts().pipe(take(1)).subscribe(products => {
-      localStorage.setItem('cachedProducts', JSON.stringify(products)); // Guardar cache
+    this.apiService.getProducts().pipe(take(1)).subscribe(products => {
+      localStorage.setItem('cachedProducts', JSON.stringify(products));
       this.products$ = new BehaviorSubject<Product[]>(products);
+    }, err => {
+      console.error('API getProducts error:', err);
+      this.products$ = new BehaviorSubject<Product[]>([]);
     });
   }
 }
@@ -188,11 +193,19 @@ loadCategories() {
   if (cachedCategories) {
     this.categories$ = new BehaviorSubject<Category[]>(JSON.parse(cachedCategories));
   } else {
-    this.firebaseService.getCategories().pipe(take(1)).subscribe(categories => {
-      localStorage.setItem('cachedCategories', JSON.stringify(categories));
-      this.categories$ = new BehaviorSubject<Category[]>(categories);
-    });
+    this.categories$ = new BehaviorSubject<Category[]>([]);
   }
+
+  // Always sync latest categories from API so admin changes are reflected without manual cache clearing.
+  this.apiService.getCategories().pipe(take(1)).subscribe(categories => {
+    localStorage.setItem('cachedCategories', JSON.stringify(categories));
+    this.categories$ = new BehaviorSubject<Category[]>(categories);
+  }, err => {
+    console.error('API getCategories error:', err);
+    if (!cachedCategories) {
+      this.categories$ = new BehaviorSubject<Category[]>([]);
+    }
+  });
 }
 
   setOrderType(type: string) {
@@ -202,7 +215,12 @@ loadCategories() {
 
   verDetalles(producto: any) {
     this.productoService.setProductoSeleccionado(producto); // Guardamos el producto seleccionado
-    this.router.navigate(['/producto', producto.id]);
+    const productId = producto.id || producto._id;
+    if (!productId) {
+      console.error('Producto sin ID:', producto);
+      return;
+    }
+    this.router.navigate([this.routePath('producto'), productId]);
   }
 
   actualizarCantidadCarrito() {
@@ -229,7 +247,7 @@ loadCategories() {
     } else {
       this.selectedCategory = category;
       if(this.selectedCategory === 'Arma tu salchi') {
-        this.router.navigate(['/producto', 'Arma-tu-Salchi!']);
+        this.router.navigate([this.routePath('producto'), 'Arma-tu-Salchi!']);
       }
       this.category$.next(category);
     }
@@ -279,7 +297,7 @@ loadCategories() {
 
 
   irAlCarrito() {
-    this.router.navigate(['/carrito']); // Ajusta la ruta según tu configuración de rutas
+    this.router.navigate([this.routePath('carrito')]);
   }
 
   checkOpeningHours() {
@@ -298,6 +316,10 @@ loadCategories() {
   
   closeModal() {
     this.showClosedModal = false;
+  }
+
+  private routePath(path: string): string {
+    return this.isMeseroMode ? `/mesero/${path}` : `/${path}`;
   }
 
 }

@@ -126,7 +126,15 @@ export class HorarioService {
           return false;
         }
         
-        const { inicio, fin } = horario[diaSemana];
+        const inicioRaw = Number(horario[diaSemana].inicio);
+        const finRaw = Number(horario[diaSemana].fin);
+        const inicio = this.normalizeHour(inicioRaw);
+        const fin = this.normalizeHour(finRaw);
+
+        // Mismo valor de inicio y fin representa servicio 24 horas.
+        if (inicioRaw === finRaw || inicio === fin) {
+          return true;
+        }
         
         // Si el horario de cierre es menor que el de apertura, significa que cierra al día siguiente
         if (fin < inicio) {
@@ -168,6 +176,7 @@ export class HorarioService {
    */
   formatHorarioDia(dia: HorarioDia): string {
     if (!dia.abierto) return 'Cerrado';
+    if (dia.inicio === dia.fin) return 'Abierto 24 horas';
     return `${this.formatHora(dia.inicio)} - ${this.formatHora(dia.fin)}`;
   }
 
@@ -175,8 +184,18 @@ export class HorarioService {
    * Formatea una hora en formato 24h a formato 12h
    */
   private formatHora(hora: number): string {
-    const periodo = hora >= 12 ? 'PM' : 'AM';
-    const hora12 = hora % 12 || 12; // Convierte 0 a 12
+    const normalized = this.normalizeHour(hora);
+    const periodo = normalized >= 12 ? 'PM' : 'AM';
+    const hora12 = normalized % 12 || 12; // Convierte 0 a 12
     return `${hora12}:00 ${periodo}`;
+  }
+
+  private normalizeHour(hora: number): number {
+    const value = Number(hora);
+    if (!Number.isFinite(value)) return 0;
+    if (value === 24) return 0;
+    if (value < 0) return 0;
+    if (value > 24) return value % 24;
+    return value;
   }
 }

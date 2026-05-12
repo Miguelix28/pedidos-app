@@ -9,12 +9,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { GoogleAuthService } from '../../services/google.auth.service';
 import { Horario, HorarioService } from '../../services/horario.service';
 import { take } from 'rxjs/operators';
+import { AlertService } from '../../services/alert.service';
 
 interface DiaSemana {
   nombre: string;
@@ -39,7 +39,6 @@ interface HoraDisplay {
     MatButtonModule,
     MatIconModule,
     MatSlideToggleModule,
-    MatSnackBarModule,
     MatTooltipModule
   ],
   templateUrl: './horario.component.html',
@@ -68,10 +67,10 @@ export class HorarioComponent implements OnInit {
     private firestore: Firestore,
     private horarioService: HorarioService,
     private authService: GoogleAuthService,
-    private snackBar: MatSnackBar
+    private alertService: AlertService
   ) {
-    // Generar horas disponibles (0-23)
-    for (let i = 0; i < 24; i++) {
+    // Generar horas disponibles (0-24) para permitir seleccionar 24:00.
+    for (let i = 0; i <= 24; i++) {
       this.horasDisponibles.push({
         texto: this.formatHora(i),
         valor: i
@@ -219,11 +218,19 @@ export class HorarioComponent implements OnInit {
     if (fin < inicio) {
       return true;  // Es válido cerrar al día siguiente
     }
+
+    // Mismo valor en apertura/cierre se interpreta como servicio 24 horas.
+    if (fin === inicio) {
+      return true;
+    }
     
     return fin > inicio;
   }
 
   formatHora(hora: number): string {
+    if (hora === 24) {
+      return '12:00 AM (24:00)';
+    }
     const periodo = hora >= 12 ? 'PM' : 'AM';
     const hora12 = hora % 12 || 12; // Convierte 0 a 12
     return `${hora12}:00 ${periodo}`;
@@ -246,19 +253,10 @@ export class HorarioComponent implements OnInit {
   
   // Métodos para mostrar mensajes y errores
   mostrarMensaje(mensaje: string): void {
-    this.snackBar.open(mensaje, 'Cerrar', {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
+    this.alertService.success(mensaje, 3000);
   }
   
   mostrarError(mensaje: string): void {
-    this.snackBar.open(mensaje, 'Cerrar', {
-      duration: 5000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-      panelClass: ['error-snackbar']
-    });
+    this.alertService.error(mensaje, 5000);
   }
 }

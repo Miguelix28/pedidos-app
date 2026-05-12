@@ -57,7 +57,7 @@
             
             <p *ngIf="!horasValidas(dia.valor)" class="error-message">
               <mat-icon>error</mat-icon>
-              La hora de cierre debe ser posterior a la hora de apertura
+              La hora de cierre debe ser posterior o igual a la apertura (igual = 24 horas)
             </p>
           </mat-card-content>
         </mat-card>

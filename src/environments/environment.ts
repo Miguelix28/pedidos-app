@@ -9,5 +9,6 @@ export const environment = {
     appId: "1:1085086037703:web:6806e18c715c43bbab30e2",
     measurementId: "G-HKJN5JFYGL"
   },
-  redirectUrl: 'http://localhost:4200/login'
+  redirectUrl: 'http://localhost:4200/login',
+  apiBaseUrl: 'http://localhost:4000/api' // Para dev local con backend en 3001
 };

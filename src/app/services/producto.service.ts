@@ -1,34 +1,36 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Firestore, collection, collectionData, doc, docData } from '@angular/fire/firestore';
+import { ApiService, Product } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProductoService {
-  private productosSubject = new BehaviorSubject<any[]>([]);
+  private productosSubject = new BehaviorSubject<Product[]>([]);
   productos$ = this.productosSubject.asObservable();
 
-  private productoSeleccionado = new BehaviorSubject<any>(null);
+  private productoSeleccionado = new BehaviorSubject<Product | null>(null);
   producto$ = this.productoSeleccionado.asObservable();
 
-  constructor(private firestore: Firestore) {
+  constructor(private apiService: ApiService) {
     this.cargarProductos();
   }
 
   private cargarProductos() {
-    const productosRef = collection(this.firestore, 'products'); // 🔥 Cambia 'productos' por el nombre real de tu colección en Firebase
-    collectionData(productosRef, { idField: 'id' }).subscribe((productos) => {
-      this.productosSubject.next(productos);
+    this.apiService.getProducts().subscribe({
+      next: (productos) => this.productosSubject.next(productos),
+      error: (err) => {
+        console.error('Error cargando productos desde API:', err);
+        this.productosSubject.next([]);
+      }
     });
   }
 
-  getProductoById(id: string): Observable<any | null> {
-    const productoRef = doc(this.firestore, `products/${id}`);
-    return docData(productoRef, { idField: 'id' });
+  getProductoById(id: string): Observable<Product> {
+    return this.apiService.getProductById(id);
   }
 
-  setProductoSeleccionado(producto: any) {
+  setProductoSeleccionado(producto: Product) {
     this.productoSeleccionado.next(producto);
   }
 }

@@ -5,23 +5,20 @@ import { AppComponent } from './app/app.component';
 import { environment } from './environments/environment';
 import { routes } from './app/app.routes';
 import { provideRouter } from '@angular/router';
-import { isDevMode } from '@angular/core';
 import { provideServiceWorker } from '@angular/service-worker';
 import { provideAuth, getAuth } from '@angular/fire/auth';
-// Importar módulos de compatibilidad
-import { FIREBASE_OPTIONS } from '@angular/fire/compat';
+import { provideHttpClient } from '@angular/common/http';
 
 bootstrapApplication(AppComponent, {
   providers: [
     provideRouter(routes),
+    provideHttpClient(),
     provideFirebaseApp(() => initializeApp(environment.firebase)),
     provideFirestore(() => getFirestore()),
     provideAuth(() => getAuth()),
     provideServiceWorker('ngsw-worker.js', {
       enabled: environment.production,
       registrationStrategy: 'registerWhenStable:30000'
-    }),
-    // Añadir esto para soporte de compatibilidad
-    { provide: FIREBASE_OPTIONS, useValue: environment.firebase }
+    })
   ]
 }).catch(err => console.error(err));

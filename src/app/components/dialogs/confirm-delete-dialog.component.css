@@ -1,0 +1,42 @@
+h2.mat-dialog-title {
+  background-color: #d84315;
+  color: #fff;
+  padding: 14px 16px;
+  margin: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+:host ::ng-deep .mat-mdc-dialog-container {
+  padding: 0;
+}
+
+.content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 20px;
+}
+
+.icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: #fff3e0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-wrap mat-icon {
+  color: #ef6c00;
+}
+
+.content p {
+  margin: 0;
+  color: #263238;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 8px 16px 12px;
+  border-top: 1px solid #eee;
+}

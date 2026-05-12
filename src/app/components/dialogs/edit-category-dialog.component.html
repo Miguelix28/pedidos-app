@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>{{ data.id ? 'Editar' : 'Nueva' }} Categoria</h2>
+
+<form [formGroup]="categoryForm" (ngSubmit)="onSave()">
+  <div mat-dialog-content>
+    <div class="form-grid">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="name" placeholder="Ej. Hamburguesas" />
+        <mat-error *ngIf="categoryForm.get('name')?.hasError('required')">El nombre es obligatorio</mat-error>
+        <mat-error *ngIf="categoryForm.get('name')?.hasError('minlength')">Minimo 2 caracteres</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Imagen de categoria</mat-label>
+        <input matInput formControlName="icon" placeholder="https://..." />
+        <mat-hint>Esta imagen se mostrara en el menu</mat-hint>
+      </mat-form-field>
+
+      <div class="upload-section full-width">
+        <input #fileInput type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
+        <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="isUploadingImage">
+          <mat-icon>cloud_upload</mat-icon>
+          {{ isUploadingImage ? 'Subiendo...' : 'Subir imagen' }}
+        </button>
+      </div>
+
+      <div class="image-preview" *ngIf="categoryForm.get('icon')?.value">
+        <img [src]="categoryForm.get('icon')?.value" alt="Preview categoria" />
+      </div>
+    </div>
+  </div>
+
+  <div mat-dialog-actions align="end">
+    <button type="button" mat-button (click)="onCancel()">Cancelar</button>
+    <button type="submit" mat-raised-button color="primary" [disabled]="categoryForm.invalid">
+      {{ data.id ? 'Actualizar' : 'Guardar' }}
+    </button>
+  </div>
+</form>

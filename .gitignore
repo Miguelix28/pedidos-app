@@ -45,5 +45,6 @@ Thumbs.db
 .firebase
 *-debug.log
 .runtimeconfig.json
+api/serviceAccountKey.json
 
 .vercel

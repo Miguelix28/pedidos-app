@@ -1,0 +1,56 @@
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.upload-section {
+  display: flex;
+  align-items: center;
+}
+
+.image-preview {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px;
+  background: #fafafa;
+}
+
+.image-preview img {
+  max-width: 160px;
+  max-height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+:host ::ng-deep .mat-mdc-dialog-container {
+  padding: 0;
+}
+
+h2.mat-dialog-title {
+  background-color: #3f51b5;
+  color: #fff;
+  padding: 16px;
+  margin: 0;
+  border-radius: 4px 4px 0 0;
+}
+
+.mat-mdc-dialog-content {
+  padding: 20px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.mat-mdc-dialog-actions {
+  padding: 8px 24px;
+  border-top: 1px solid #eee;
+}

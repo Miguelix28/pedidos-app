@@ -3,6 +3,7 @@ import {
   Auth, 
   getRedirectResult, 
   GoogleAuthProvider, 
+  onAuthStateChanged,
   signInWithPopup, 
   signInWithRedirect, 
   signOut, 
@@ -166,7 +167,60 @@ export class GoogleAuthService {
     return this.auth;
   }
 
+  private waitForAuthUser(timeoutMs: number = 4000): Promise<any | null> {
+    return new Promise((resolve) => {
+      if (this.auth.currentUser) {
+        resolve(this.auth.currentUser);
+        return;
+      }
+
+      let settled = false;
+      const timeoutId = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        unsubscribe();
+        resolve(this.auth.currentUser || null);
+      }, timeoutMs);
+
+      const unsubscribe = onAuthStateChanged(this.auth, (authUser) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeoutId);
+        unsubscribe();
+        resolve(authUser || null);
+      });
+    });
+  }
+
+  async getIdToken(): Promise<string | null> {
+    let currentUser = this.auth.currentUser;
+    if (!currentUser) {
+      currentUser = await this.waitForAuthUser();
+    }
+
+    if (!currentUser) {
+      return null;
+    }
+
+    return currentUser.getIdToken();
+  }
+
   getRedirectAuthResult() {
     return getRedirectResult(this.auth);
+  }
+
+  async getCurrentUserRole(): Promise<string | null> {
+    let currentUser = this.auth.currentUser;
+    if (!currentUser) {
+      currentUser = await this.waitForAuthUser();
+    }
+
+    if (!currentUser) {
+      return null;
+    }
+
+    const userRef = doc(this.firestore, `users/${currentUser.uid}`);
+    const snapshot = await getDoc(userRef);
+    return snapshot.data()?.['role'] || 'user';
   }
 }

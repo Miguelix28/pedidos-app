@@ -21,7 +21,7 @@
     <mat-accordion class="accordion-container"  multi>
       
       <!-- Acordeón 1: Cantidad de porciones -->
-      <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto.category === 'Arma tu salchi'">
+      <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto?.category === 'Arma tu salchi'">
         <mat-expansion-panel-header class="expansion-header">
           <mat-panel-title>Cantidad de porciones</mat-panel-title>
         </mat-expansion-panel-header>
@@ -40,7 +40,7 @@
       </mat-expansion-panel>
 
       <!-- Acordeón 1: Cantidad de personas -->
-      <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto.category === 'Salchipapa'">
+      <mat-expansion-panel [expanded]="currentStep === 0" *ngIf="producto?.category === 'Salchipapa'">
         <mat-expansion-panel-header class="expansion-header">
           <mat-panel-title>Cantidad de porciones</mat-panel-title>
         </mat-expansion-panel-header>
