@@ -19,33 +19,37 @@ const adminUploadHandler = require('./admin/upload-image');
 const adminUsersHandler = require('./admin/users');
 
 // Routes
-app.get('/health', healthHandler);
-app.get('/products', productsHandler);
-app.post('/products', productsHandler);
-app.get('/categories', categoriesHandler);
-app.post('/categories', categoriesHandler);
-app.get('/orders', ordersHandler);
-app.post('/orders', ordersHandler);
+app.get('/api/health', (req, res) => healthHandler(req, res));
+app.get('/api/products', (req, res) => productsHandler(req, res));
+app.post('/api/products', (req, res) => productsHandler(req, res));
+app.get('/api/categories', (req, res) => categoriesHandler(req, res));
+app.post('/api/categories', (req, res) => categoriesHandler(req, res));
+app.get('/api/orders', (req, res) => ordersHandler(req, res));
+app.post('/api/orders', (req, res) => ordersHandler(req, res));
 
 // Admin Routes
-app.get('/admin/categories', adminCategoriesHandler);
-app.post('/admin/categories', adminCategoriesHandler);
-app.put('/admin/categories/:id', adminCategoriesHandler);
-app.delete('/admin/categories/:id', adminCategoriesHandler);
+app.get('/api/admin/categories', (req, res) => adminCategoriesHandler(req, res));
+app.post('/api/admin/categories', (req, res) => adminCategoriesHandler(req, res));
+app.put('/api/admin/categories/:id', (req, res) => adminCategoriesHandler(req, res));
+app.delete('/api/admin/categories/:id', (req, res) => adminCategoriesHandler(req, res));
 
-app.get('/admin/orders', adminOrdersHandler);
-app.post('/admin/orders', adminOrdersHandler);
-app.put('/admin/orders/:id', adminOrdersHandler);
+app.get('/api/admin/orders', (req, res) => adminOrdersHandler(req, res));
+app.post('/api/admin/orders', (req, res) => adminOrdersHandler(req, res));
+app.put('/api/admin/orders/:id', (req, res) => adminOrdersHandler(req, res));
 
-app.get('/admin/products', adminProductsHandler);
-app.post('/admin/products', adminProductsHandler);
-app.put('/admin/products/:id', adminProductsHandler);
-app.delete('/admin/products/:id', adminProductsHandler);
+app.get('/api/admin/products', (req, res) => adminProductsHandler(req, res));
+app.post('/api/admin/products', (req, res) => adminProductsHandler(req, res));
+app.put('/api/admin/products/:id', (req, res) => adminProductsHandler(req, res));
+app.delete('/api/admin/products/:id', (req, res) => adminProductsHandler(req, res));
 
-app.post('/admin/upload-image', adminUploadHandler);
+app.post('/api/admin/upload-image', (req, res) => adminUploadHandler(req, res));
 
-app.get('/admin/users', adminUsersHandler);
-app.post('/admin/users', adminUsersHandler);
+app.get('/api/admin/users', (req, res) => adminUsersHandler(req, res));
+app.post('/api/admin/users', (req, res) => adminUsersHandler(req, res));
 
-// Export for Vercel
+// Fallback 404
+app.use((req, res) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
 module.exports = app;
