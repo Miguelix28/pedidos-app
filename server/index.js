@@ -4,8 +4,8 @@ const bodyParser = require('body-parser');
 const app = express();
 
 // Middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Import route handlers
 const healthHandler = require('./health');
