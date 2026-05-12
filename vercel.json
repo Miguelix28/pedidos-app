@@ -1,34 +1,7 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "api.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist/pedidos-app"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "^/api/(.*)$",
-      "dest": "/api.js?path=/$1",
-      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-    },
-    {
-      "src": "^/assets/(.*)$",
-      "headers": {
-        "cache-control": "public, max-age=31536000, immutable"
-      },
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "^/(.*)$",
-      "dest": "/index.html"
-    }
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/pedidos-app",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
