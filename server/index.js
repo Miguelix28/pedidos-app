@@ -30,17 +30,16 @@ app.post('/api/orders', (req, res) => ordersHandler(req, res));
 // Admin Routes
 app.get('/api/admin/categories', (req, res) => adminCategoriesHandler(req, res));
 app.post('/api/admin/categories', (req, res) => adminCategoriesHandler(req, res));
-app.put('/api/admin/categories/:id', (req, res) => adminCategoriesHandler(req, res));
-app.delete('/api/admin/categories/:id', (req, res) => adminCategoriesHandler(req, res));
+app.put('/api/admin/categories', (req, res) => adminCategoriesHandler(req, res));
+app.delete('/api/admin/categories', (req, res) => adminCategoriesHandler(req, res));
 
 app.get('/api/admin/orders', (req, res) => adminOrdersHandler(req, res));
-app.post('/api/admin/orders', (req, res) => adminOrdersHandler(req, res));
-app.put('/api/admin/orders/:id', (req, res) => adminOrdersHandler(req, res));
+app.patch('/api/admin/orders', (req, res) => adminOrdersHandler(req, res));
 
 app.get('/api/admin/products', (req, res) => adminProductsHandler(req, res));
 app.post('/api/admin/products', (req, res) => adminProductsHandler(req, res));
-app.put('/api/admin/products/:id', (req, res) => adminProductsHandler(req, res));
-app.delete('/api/admin/products/:id', (req, res) => adminProductsHandler(req, res));
+app.put('/api/admin/products', (req, res) => adminProductsHandler(req, res));
+app.delete('/api/admin/products', (req, res) => adminProductsHandler(req, res));
 
 app.post('/api/admin/upload-image', (req, res) => adminUploadHandler(req, res));
 
