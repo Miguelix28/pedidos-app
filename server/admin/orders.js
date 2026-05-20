@@ -5,8 +5,9 @@ function parseRange(query) {
   const now = new Date();
   const period = String(query.period || 'day').toLowerCase();
   // tzOffset is browser's getTimezoneOffset() in minutes (positive for UTC-, e.g. Colombia UTC-5 = 300)
+  // Default to 300 (UTC-5, Colombia) so old clients without tzOffset work correctly
   const rawOffset = Number(query.tzOffset);
-  const tzOffsetMs = Number.isFinite(rawOffset) ? rawOffset * 60 * 1000 : 0;
+  const tzOffsetMs = Number.isFinite(rawOffset) ? rawOffset * 60 * 1000 : 5 * 60 * 60 * 1000;
 
   // Converts a local calendar date to UTC boundaries accounting for the client's timezone
   function localDateToUTCRange(year, month, day) {
