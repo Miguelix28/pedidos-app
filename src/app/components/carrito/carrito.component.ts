@@ -303,8 +303,8 @@ numeroCelularValido(): boolean {
       console.error('No se pudo guardar el pedido en backend:', err);
     }
 
-    // const numeroDestino = "573163600104";
-    const numeroDestino = "573165345924";
+    const numeroDestino = "573163600104";
+    // const numeroDestino = "573165345924";
     const urlWhatsApp = `https://wa.me/${numeroDestino}?text=${encodeURIComponent(mensaje)}`;
 
     // Try opening a new tab first; if blocked, fallback to same-tab redirect.
