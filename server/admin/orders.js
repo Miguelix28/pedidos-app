@@ -4,22 +4,33 @@ const Order = require('../models/Order');
 function parseRange(query) {
   const now = new Date();
   const period = String(query.period || 'day').toLowerCase();
+  // tzOffset is browser's getTimezoneOffset() in minutes (positive for UTC-, e.g. Colombia UTC-5 = 300)
+  const rawOffset = Number(query.tzOffset);
+  const tzOffsetMs = Number.isFinite(rawOffset) ? rawOffset * 60 * 1000 : 0;
+
+  // Converts a local calendar date to UTC boundaries accounting for the client's timezone
+  function localDateToUTCRange(year, month, day) {
+    const startMs = Date.UTC(year, month, day) + tzOffsetMs;
+    return { start: new Date(startMs), end: new Date(startMs + 24 * 60 * 60 * 1000) };
+  }
 
   if (period === 'day') {
-    const day = query.date ? new Date(`${query.date}T00:00:00`) : new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    if (Number.isNaN(day.getTime())) {
-      return null;
+    if (query.date) {
+      const parts = String(query.date).split('-').map(Number);
+      if (parts.length !== 3 || parts.some((p) => !Number.isFinite(p))) return null;
+      const { start, end } = localDateToUTCRange(parts[0], parts[1] - 1, parts[2]);
+      return { period, start, end };
     }
-    const start = new Date(day.getFullYear(), day.getMonth(), day.getDate());
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
+    // Derive today in client's local time using tzOffset
+    const localNow = new Date(now.getTime() - tzOffsetMs);
+    const { start, end } = localDateToUTCRange(localNow.getUTCFullYear(), localNow.getUTCMonth(), localNow.getUTCDate());
     return { period, start, end };
   }
 
   if (period === 'month') {
     const monthText = String(query.month || '').trim();
-    let year = now.getFullYear();
-    let month = now.getMonth();
+    let year = now.getUTCFullYear();
+    let month = now.getUTCMonth();
 
     if (monthText) {
       const [y, m] = monthText.split('-').map((v) => Number(v));
@@ -30,19 +41,19 @@ function parseRange(query) {
       month = m - 1;
     }
 
-    const start = new Date(year, month, 1);
-    const end = new Date(year, month + 1, 1);
-    return { period, start, end };
+    const startMs = Date.UTC(year, month, 1) + tzOffsetMs;
+    const endMs = Date.UTC(year, month + 1, 1) + tzOffsetMs;
+    return { period, start: new Date(startMs), end: new Date(endMs) };
   }
 
   if (period === 'year') {
-    const y = query.year ? Number(query.year) : now.getFullYear();
+    const y = query.year ? Number(query.year) : now.getUTCFullYear();
     if (!Number.isFinite(y) || y < 2000 || y > 3000) {
       return null;
     }
-    const start = new Date(y, 0, 1);
-    const end = new Date(y + 1, 0, 1);
-    return { period, start, end };
+    const startMs = Date.UTC(y, 0, 1) + tzOffsetMs;
+    const endMs = Date.UTC(y + 1, 0, 1) + tzOffsetMs;
+    return { period, start: new Date(startMs), end: new Date(endMs) };
   }
 
   return null;

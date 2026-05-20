@@ -122,7 +122,10 @@ export class ApiService {
   getAdminOrders(
     filters: { period: 'day' | 'month' | 'year'; date?: string; month?: string; year?: number }
   ): Observable<any> {
-    const params: any = { period: filters.period };
+    const params: any = {
+      period: filters.period,
+      tzOffset: new Date().getTimezoneOffset(),
+    };
 
     if (filters.date) params.date = filters.date;
     if (filters.month) params.month = filters.month;
